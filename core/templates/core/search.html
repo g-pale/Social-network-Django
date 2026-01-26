@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Поиск{% if query %} - {{ query }}{% endif %} - MiniSocial{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <!-- Форма поиска -->
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <form method="get" action="{% url 'core:search' %}" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" name="q" 
+                               placeholder="Введите запрос для поиска..." 
+                               value="{{ query }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" name="type">
+                            <option value="all" {% if search_type == 'all' %}selected{% endif %}>Все</option>
+                            <option value="posts" {% if search_type == 'posts' %}selected{% endif %}>Посты</option>
+                            <option value="users" {% if search_type == 'users' %}selected{% endif %}>Пользователи</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Поиск
+                        </button>
+                        {% if query %}
+                            <a href="{% url 'core:search' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i> Очистить
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if query %}
+            <!-- Результаты поиска -->
+            <div class="row">
+                <!-- Посты -->
+                {% if search_type == 'all' or search_type == 'posts' %}
+                    <div class="{% if search_type == 'all' %}col-md-6{% else %}col-md-12{% endif %}">
+                        <div class="card shadow mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-file-post"></i> Посты 
+                                    {% if posts_results %}({{ posts_results.paginator.count }}){% endif %}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if posts_results %}
+                                    {% for post in posts_results %}
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-start mb-2">
+                                                    <!-- Аватар автора -->
+                                                    {% if post.author.avatar %}
+                                                        <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}" 
+                                                             class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                                                    {% else %}
+                                                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" 
+                                                             style="width: 32px; height: 32px; font-size: 14px;">
+                                                            {{ post.author.username|first|upper }}
+                                                        </div>
+                                                    {% endif %}
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-0">
+                                                            <a href="{% url 'accounts:profile' post.author.username %}" class="text-decoration-none">
+                                                                {{ post.author.username }}
+                                                            </a>
+                                                        </h6>
+                                                        <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
+                                                    </div>
+                                                </div>
+                                                <p class="card-text mb-2">
+                                                    {{ post.text|truncatewords:30 }}
+                                                </p>
+                                                {% if post.image %}
+                                                    <img src="{{ post.image.url }}" alt="Post image" 
+                                                         class="img-fluid rounded mb-2" style="max-height: 150px;">
+                                                {% endif %}
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-heart"></i> {{ post.get_likes_count }} 
+                                                        <i class="bi bi-chat ms-2"></i> {{ post.get_comments_count }}
+                                                    </small>
+                                                    <a href="{% url 'posts:detail' post.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        Открыть <i class="bi bi-arrow-right"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    
+                                    <!-- Пагинация для постов -->
+                                    {% if posts_results.has_other_pages %}
+                                        <nav aria-label="Навигация по страницам постов">
+                                            <ul class="pagination justify-content-center">
+                                                {% if posts_results.has_previous %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page=1&users_page={{ users_results.number|default:1 }}">
+                                                            <i class="bi bi-chevron-double-left"></i>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page={{ posts_results.previous_page_number }}&users_page={{ users_results.number|default:1 }}">
+                                                            <i class="bi bi-chevron-left"></i>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">
+                                                        Страница {{ posts_results.number }} из {{ posts_results.paginator.num_pages }}
+                                                    </span>
+                                                </li>
+                                                {% if posts_results.has_next %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page={{ posts_results.next_page_number }}&users_page={{ users_results.number|default:1 }}">
+                                                            <i class="bi bi-chevron-right"></i>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page={{ posts_results.paginator.num_pages }}&users_page={{ users_results.number|default:1 }}">
+                                                            <i class="bi bi-chevron-double-right"></i>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="text-muted text-center py-3">Посты не найдены</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Пользователи -->
+                {% if search_type == 'all' or search_type == 'users' %}
+                    <div class="{% if search_type == 'all' %}col-md-6{% else %}col-md-12{% endif %}">
+                        <div class="card shadow mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-people"></i> Пользователи 
+                                    {% if users_results %}({{ users_results.paginator.count }}){% endif %}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                {% if users_results %}
+                                    <div class="row">
+                                        {% for user in users_results %}
+                                            <div class="col-md-{% if search_type == 'all' %}12{% else %}6{% endif %} mb-3">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <div class="d-flex align-items-center">
+                                                            <!-- Аватар -->
+                                                            {% if user.avatar %}
+                                                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}" 
+                                                                     class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                                            {% else %}
+                                                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-3" 
+                                                                     style="width: 50px; height: 50px; font-size: 20px;">
+                                                                    {{ user.username|first|upper }}
+                                                                </div>
+                                                            {% endif %}
+                                                            <div class="flex-grow-1">
+                                                                <h6 class="mb-1">
+                                                                    <a href="{% url 'accounts:profile' user.username %}" class="text-decoration-none">
+                                                                        {{ user.username }}
+                                                                    </a>
+                                                                </h6>
+                                                                {% if user.first_name or user.last_name %}
+                                                                    <p class="text-muted small mb-1">{{ user.get_full_name }}</p>
+                                                                {% endif %}
+                                                                <div class="d-flex gap-3 small text-muted">
+                                                                    <span><i class="bi bi-file-post"></i> {{ user.get_posts_count }}</span>
+                                                                    <span><i class="bi bi-people"></i> {{ user.get_followers_count }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <!-- Пагинация для пользователей -->
+                                    {% if users_results.has_other_pages %}
+                                        <nav aria-label="Навигация по страницам пользователей">
+                                            <ul class="pagination justify-content-center">
+                                                {% if users_results.has_previous %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page={{ posts_results.number|default:1 }}&users_page=1">
+                                                            <i class="bi bi-chevron-double-left"></i>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page={{ posts_results.number|default:1 }}&users_page={{ users_results.previous_page_number }}">
+                                                            <i class="bi bi-chevron-left"></i>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">
+                                                        Страница {{ users_results.number }} из {{ users_results.paginator.num_pages }}
+                                                    </span>
+                                                </li>
+                                                {% if users_results.has_next %}
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page={{ posts_results.number|default:1 }}&users_page={{ users_results.next_page_number }}">
+                                                            <i class="bi bi-chevron-right"></i>
+                                                        </a>
+                                                    </li>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&posts_page={{ posts_results.number|default:1 }}&users_page={{ users_results.paginator.num_pages }}">
+                                                            <i class="bi bi-chevron-double-right"></i>
+                                                        </a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </nav>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="text-muted text-center py-3">Пользователи не найдены</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if not posts_results and not users_results %}
+                <div class="card shadow">
+                    <div class="card-body text-center py-5">
+                        <h5>Ничего не найдено</h5>
+                        <p class="text-muted">Попробуйте изменить запрос или выбрать другой тип поиска</p>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Инструкция по использованию поиска -->
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <h5><i class="bi bi-search"></i> Поиск по постам и пользователям</h5>
+                    <p class="text-muted">
+                        Введите запрос в поле поиска выше. Вы можете искать:
+                    </p>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> По тексту постов</li>
+                        <li><i class="bi bi-check-circle text-success"></i> По имени пользователя</li>
+                        <li><i class="bi bi-check-circle text-success"></i> По email пользователя</li>
+                        <li><i class="bi bi-check-circle text-success"></i> По имени и фамилии</li>
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

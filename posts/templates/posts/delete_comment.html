@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить комментарий - MiniSocial{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Удаление комментария
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Вы уверены, что хотите удалить этот комментарий?</p>
+                <div class="alert alert-light">
+                    <strong>{{ comment.author.username }}</strong><br>
+                    <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                    <p class="mb-0 mt-2">{{ comment.text|linebreaks }}</p>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Удалить
+                        </button>
+                        <a href="{% url 'posts:detail' comment.post.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

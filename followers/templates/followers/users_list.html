@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - MiniSocial{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-{% if list_type == 'followers' %}people{% else %}person-check{% endif %}"></i> 
+                        {{ title }}
+                    </h5>
+                    <a href="{% url 'accounts:profile' profile_user.username %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад к профилю
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                    <div class="row">
+                        {% for user in users %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <!-- Аватар -->
+                                            {% if user.avatar %}
+                                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}" 
+                                                     class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-3" 
+                                                     style="width: 60px; height: 60px; font-size: 24px;">
+                                                    {{ user.username|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">
+                                                    <a href="{% url 'accounts:profile' user.username %}" class="text-decoration-none">
+                                                        {{ user.username }}
+                                                    </a>
+                                                </h6>
+                                                {% if user.first_name or user.last_name %}
+                                                    <p class="text-muted small mb-1">{{ user.get_full_name }}</p>
+                                                {% endif %}
+                                                <div class="d-flex gap-3 small text-muted">
+                                                    <span><i class="bi bi-file-post"></i> {{ user.get_posts_count }} постов</span>
+                                                    <span><i class="bi bi-people"></i> {{ user.get_followers_count }} подписчиков</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Кнопка подписки (если не свой профиль) -->
+                                            {% if request.user.is_authenticated and request.user != user %}
+                                                {% if user.id in following_users %}
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger follow-btn"
+                                                            data-username="{{ user.username }}"
+                                                            data-following="true">
+                                                        <i class="bi bi-person-dash"></i> 
+                                                        <span class="follow-text">Отписаться</span>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-primary follow-btn"
+                                                            data-username="{{ user.username }}"
+                                                            data-following="false">
+                                                        <i class="bi bi-person-plus"></i> 
+                                                        <span class="follow-text">Подписаться</span>
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">
+                        {% if list_type == 'followers' %}
+                            У этого пользователя пока нет подписчиков.
+                        {% else %}
+                            Этот пользователь пока ни на кого не подписан.
+                        {% endif %}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+{% if request.user.is_authenticated %}
+<script src="{% static 'js/follow.js' %}"></script>
+{% endif %}
+{% endblock %}
+{% endblock %}
