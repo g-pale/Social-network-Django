@@ -19,10 +19,7 @@ class User(AbstractUser):
         blank=True,
         verbose_name='О себе'
     )
-    date_joined = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата регистрации'
-    )
+    # date_joined уже определён в AbstractUser (default=timezone.now)
 
     class Meta:
         verbose_name = 'Пользователь'

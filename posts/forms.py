@@ -1,5 +1,4 @@
 from django import forms
-from django.core.exceptions import ValidationError
 from .models import Post, Comment
 import os
 
@@ -49,7 +48,7 @@ class PostForm(forms.ModelForm):
         if len(text) > 1000:
             raise forms.ValidationError('Текст поста не может превышать 1000 символов.')
         return text.strip()
-    
+
     def clean_image(self):
         """Валидация изображения"""
         image = self.cleaned_data.get('image')
@@ -58,19 +57,19 @@ class PostForm(forms.ModelForm):
             max_size = 5 * 1024 * 1024  # 5 МБ
             if image.size > max_size:
                 raise forms.ValidationError('Размер изображения не должен превышать 5 МБ.')
-            
+
             # Проверка типа файла
             allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
             ext = os.path.splitext(image.name)[1].lower()
             if ext not in allowed_extensions:
                 raise forms.ValidationError('Разрешены только изображения: JPG, JPEG, PNG, GIF, WEBP.')
-            
+
             # Проверка MIME типа
             if hasattr(image, 'content_type'):
                 allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
                 if image.content_type not in allowed_mime_types:
                     raise forms.ValidationError('Недопустимый тип файла.')
-        
+
         return image
 
 

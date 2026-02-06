@@ -29,7 +29,12 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        unique_together = ['follower', 'following']  # Нельзя подписаться дважды
+        constraints = [
+            models.UniqueConstraint(
+                fields=['follower', 'following'],
+                name='unique_follower_following'
+            ),
+        ]
         indexes = [
             models.Index(fields=['follower']),
             models.Index(fields=['following']),

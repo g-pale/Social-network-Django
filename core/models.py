@@ -1,3 +1,1 @@
-from django.db import models
-
-# Create your models here.
+# Приложение core не имеет собственных моделей

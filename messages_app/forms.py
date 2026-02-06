@@ -4,7 +4,7 @@ from .models import Message
 
 class MessageForm(forms.ModelForm):
     """Форма для отправки сообщения"""
-    
+
     class Meta:
         model = Message
         fields = ['text']

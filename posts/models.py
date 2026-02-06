@@ -2,8 +2,6 @@ from django.db import models
 from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
-import os
 
 
 class Post(models.Model):
@@ -64,11 +62,11 @@ class Post(models.Model):
         if not user.is_authenticated:
             return False
         return self.likes.filter(user=user).exists()
-    
+
     def clean(self):
         """Валидация на уровне модели"""
         super().clean()
-        
+
         # Проверка длины текста
         if self.text:
             text_stripped = self.text.strip()
@@ -76,7 +74,7 @@ class Post(models.Model):
                 raise ValidationError({'text': 'Текст поста не может быть пустым.'})
             if len(text_stripped) > 1000:
                 raise ValidationError({'text': 'Текст поста не может превышать 1000 символов.'})
-    
+
     def save(self, *args, **kwargs):
         """Переопределяем save для вызова clean"""
         self.full_clean()
@@ -108,7 +106,12 @@ class Like(models.Model):
     class Meta:
         verbose_name = 'Лайк'
         verbose_name_plural = 'Лайки'
-        unique_together = ['user', 'post']  # Один пользователь - один лайк на пост
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'post'],
+                name='unique_user_post_like'
+            ),
+        ]
         indexes = [
             models.Index(fields=['post', 'user']),
         ]
@@ -156,11 +159,11 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'Комментарий от {self.author.username} к посту #{self.post.id}'
-    
+
     def clean(self):
         """Валидация на уровне модели"""
         super().clean()
-        
+
         # Проверка длины текста
         if self.text:
             text_stripped = self.text.strip()
@@ -168,7 +171,7 @@ class Comment(models.Model):
                 raise ValidationError({'text': 'Текст комментария не может быть пустым.'})
             if len(text_stripped) > 500:
                 raise ValidationError({'text': 'Текст комментария не может превышать 500 символов.'})
-    
+
     def save(self, *args, **kwargs):
         """Переопределяем save для вызова clean"""
         self.full_clean()

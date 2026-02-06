@@ -10,7 +10,7 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ['text', 'author__username']
     readonly_fields = ['created_at', 'updated_at']
     date_hierarchy = 'created_at'
-    
+
     fieldsets = (
         ('Основная информация', {
             'fields': ('author', 'text', 'image')
@@ -20,17 +20,17 @@ class PostAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
+
     def text_preview(self, obj):
         """Превью текста поста"""
         return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
     text_preview.short_description = 'Текст'
-    
+
     def get_likes_count(self, obj):
         """Количество лайков"""
         return obj.get_likes_count()
     get_likes_count.short_description = 'Лайки'
-    
+
     def get_comments_count(self, obj):
         """Количество комментариев"""
         return obj.get_comments_count()
@@ -55,7 +55,7 @@ class CommentAdmin(admin.ModelAdmin):
     search_fields = ['text', 'author__username', 'post__text']
     readonly_fields = ['created_at', 'updated_at']
     date_hierarchy = 'created_at'
-    
+
     def text_preview(self, obj):
         """Превью текста комментария"""
         return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text

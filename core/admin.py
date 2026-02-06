@@ -1,3 +1,1 @@
-from django.contrib import admin
-
-# Register your models here.
+# Приложение core не имеет моделей для регистрации в админ-панели

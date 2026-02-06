@@ -9,7 +9,7 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ('recipient__username', 'actor__username')
     readonly_fields = ('created_at',)
     date_hierarchy = 'created_at'
-    
+
     fieldsets = (
         ('Основная информация', {
             'fields': ('recipient', 'actor', 'notification_type', 'is_read')

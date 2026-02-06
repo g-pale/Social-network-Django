@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from .forms import UserRegisterForm, UserLoginForm, UserProfileEditForm
 from posts.models import Post
 from followers.models import Follow
@@ -78,24 +77,24 @@ def profile_view(request, username):
     View для отображения профиля пользователя.
     """
     profile_user = get_object_or_404(User, username=username)
-    
+
     # Получаем параметр сортировки из GET-запроса
     sort_type = request.GET.get('sort', 'newest')  # 'newest' или 'oldest'
-    
+
     # Определяем порядок сортировки
     if sort_type == 'oldest':
         order_by = 'created_at'  # Старые сверху
     else:
         order_by = '-created_at'  # Новые сверху (по умолчанию)
-    
+
     # Получаем посты пользователя
     posts = Post.objects.filter(author=profile_user).select_related('author').order_by(order_by)[:10]
-    
+
     # Статистика
     posts_count = profile_user.get_posts_count()
     followers_count = profile_user.get_followers_count()
     following_count = profile_user.get_following_count()
-    
+
     # Проверяем, подписан ли текущий пользователь на этого пользователя
     is_following = False
     if request.user.is_authenticated:
@@ -103,10 +102,10 @@ def profile_view(request, username):
             follower=request.user,
             following=profile_user
         ).exists()
-    
+
     # Проверяем, является ли это профиль текущего пользователя
     is_own_profile = request.user.is_authenticated and request.user == profile_user
-    
+
     context = {
         'profile_user': profile_user,
         'posts': posts,
@@ -117,7 +116,7 @@ def profile_view(request, username):
         'is_own_profile': is_own_profile,
         'sort_type': sort_type,
     }
-    
+
     return render(request, 'accounts/profile.html', context)
 
 
@@ -136,7 +135,7 @@ def profile_edit_view(request):
             messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
     else:
         form = UserProfileEditForm(instance=request.user)
-    
+
     return render(request, 'accounts/profile_edit.html', {'form': form})
 
 
@@ -145,13 +144,13 @@ def users_list_view(request):
     View для отображения списка всех пользователей.
     """
     users = User.objects.all().order_by('-date_joined')
-    
+
     # Если пользователь авторизован, исключаем его из списка
     if request.user.is_authenticated:
         users = users.exclude(pk=request.user.pk)
-    
+
     context = {
         'users': users,
     }
-    
+
     return render(request, 'accounts/users_list.html', context)

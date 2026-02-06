@@ -1,22 +1,6 @@
 // JavaScript для обработки комментариев через AJAX
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Получаем CSRF токен из cookies
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
     // Обработчик формы создания комментария
     const commentForm = document.getElementById('comment-form');
     
@@ -111,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
-                                <p class="mb-0 mt-1">${data.comment.text.replace(/\n/g, '<br>')}</p>
+                                <p class="mb-0 mt-1">${escapeHtml(data.comment.text).replace(/\n/g, '<br>')}</p>
                             </div>
                         </div>
                     </div>

@@ -10,7 +10,7 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ['is_staff', 'is_superuser', 'is_active', 'date_joined']
     search_fields = ['username', 'email', 'first_name', 'last_name']
     readonly_fields = ['date_joined', 'last_login']
-    
+
     fieldsets = BaseUserAdmin.fieldsets + (
         ('Дополнительная информация', {
             'fields': ('avatar', 'bio')

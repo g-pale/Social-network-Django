@@ -13,7 +13,7 @@ class Notification(models.Model):
         ('follow', 'Подписка'),
         ('message', 'Сообщение'),
     ]
-    
+
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -39,7 +39,7 @@ class Notification(models.Model):
         auto_now_add=True,
         verbose_name='Дата создания'
     )
-    
+
     # Опциональные связи для контекста
     post = models.ForeignKey(
         'posts.Post',
@@ -65,7 +65,7 @@ class Notification(models.Model):
         related_name='notifications',
         verbose_name='Беседа'
     )
-    
+
     class Meta:
         verbose_name = 'Уведомление'
         verbose_name_plural = 'Уведомления'
@@ -74,7 +74,7 @@ class Notification(models.Model):
             models.Index(fields=['recipient', '-created_at']),
             models.Index(fields=['recipient', 'is_read']),
         ]
-    
+
     def __str__(self):
         type_names = {
             'like': 'лайкнул',
@@ -83,7 +83,7 @@ class Notification(models.Model):
             'message': 'отправил сообщение'
         }
         return f'{self.actor.username} {type_names.get(self.notification_type, "")}'
-    
+
     def get_message(self):
         """Возвращает текстовое сообщение уведомления"""
         messages = {
@@ -93,7 +93,7 @@ class Notification(models.Model):
             'message': f'{self.actor.username} отправил вам сообщение',
         }
         return messages.get(self.notification_type, 'Новое уведомление')
-    
+
     def get_url(self):
         """Возвращает URL для перехода при клике на уведомление"""
         if self.notification_type == 'follow':

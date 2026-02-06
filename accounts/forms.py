@@ -174,7 +174,7 @@ class UserProfileEditForm(forms.ModelForm):
         if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError('Пользователь с таким email уже существует.')
         return email
-    
+
     def clean_avatar(self):
         """Валидация аватара"""
         avatar = self.cleaned_data.get('avatar')
@@ -183,17 +183,17 @@ class UserProfileEditForm(forms.ModelForm):
             max_size = 2 * 1024 * 1024  # 2 МБ
             if avatar.size > max_size:
                 raise forms.ValidationError('Размер аватара не должен превышать 2 МБ.')
-            
+
             # Проверка типа файла
             allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
             ext = os.path.splitext(avatar.name)[1].lower()
             if ext not in allowed_extensions:
                 raise forms.ValidationError('Разрешены только изображения: JPG, JPEG, PNG, GIF, WEBP.')
-            
+
             # Проверка MIME типа
             if hasattr(avatar, 'content_type'):
                 allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
                 if avatar.content_type not in allowed_mime_types:
                     raise forms.ValidationError('Недопустимый тип файла.')
-        
+
         return avatar

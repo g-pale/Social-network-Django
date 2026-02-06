@@ -4,7 +4,7 @@ from .models import Notification
 def create_notification(recipient, actor, notification_type, post=None, comment=None, conversation=None):
     """
     Утилита для создания уведомления.
-    
+
     Args:
         recipient: Пользователь, который получит уведомление
         actor: Пользователь, который выполнил действие
@@ -12,14 +12,14 @@ def create_notification(recipient, actor, notification_type, post=None, comment=
         post: Пост (опционально, для like и comment)
         comment: Комментарий (опционально, для comment)
         conversation: Беседа (опционально, для message)
-    
+
     Returns:
         Notification объект или None
     """
     # Не создаем уведомление, если пользователь выполняет действие над своим контентом
     if recipient == actor:
         return None
-    
+
     # Проверяем, не существует ли уже такое уведомление (защита от дублирования)
     # Для лайков и комментариев проверяем по посту и типу
     if notification_type in ['like', 'comment'] and post:
@@ -27,7 +27,7 @@ def create_notification(recipient, actor, notification_type, post=None, comment=
         # в последние 5 секунд (защита от двойных кликов и race conditions)
         from django.utils import timezone
         from datetime import timedelta
-        
+
         recent_notification = Notification.objects.filter(
             recipient=recipient,
             actor=actor,
@@ -35,11 +35,11 @@ def create_notification(recipient, actor, notification_type, post=None, comment=
             post=post,
             created_at__gte=timezone.now() - timedelta(seconds=5)
         ).first()
-        
+
         if recent_notification:
             # Уведомление уже было создано недавно, не создаем дубликат
             return recent_notification
-    
+
     # Создаем уведомление
     notification = Notification.objects.create(
         recipient=recipient,
@@ -49,5 +49,5 @@ def create_notification(recipient, actor, notification_type, post=None, comment=
         comment=comment,
         conversation=conversation
     )
-    
+
     return notification
