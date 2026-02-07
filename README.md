@@ -26,6 +26,7 @@ MiniSocial - это базовая социальная сеть, которая
 - **Pillow** (работа с изображениями)
 - **django-crispy-forms** (красивые формы)
 - **python-decouple** (управление настройками)
+- **WhiteNoise** (раздача статических файлов в production)
 
 ## Установка и запуск
 
@@ -141,14 +142,13 @@ Social-network-Django/
 │   └── base.html         # Базовый шаблон с навигацией
 │
 ├── static/               # Статические файлы
-│   ├── css/              # CSS файлы (если нужны кастомные)
-│   ├── js/               # JavaScript файлы
-│   │   ├── likes.js      # AJAX обработка лайков
-│   │   ├── comments.js   # AJAX обработка комментариев
-│   │   ├── follow.js     # AJAX обработка подписок
-│   │   ├── notifications.js  # Обработка уведомлений
-│   │   └── messages.js   # AJAX отправка сообщений
-│   └── images/           # Статические изображения
+│   └── js/               # JavaScript файлы
+│       ├── utils.js      # Общие утилиты (getCookie, escapeHtml)
+│       ├── likes.js      # AJAX обработка лайков
+│       ├── comments.js   # AJAX обработка комментариев
+│       ├── follow.js     # AJAX обработка подписок
+│       ├── notifications.js  # Обработка уведомлений
+│       └── messages.js   # AJAX отправка сообщений
 │
 ├── media/                # Загруженные пользователями файлы (не в git)
 │   ├── avatars/          # Аватары пользователей
@@ -253,6 +253,7 @@ Social-network-Django/
 - ✅ CSRF защита
 - ✅ Проверки прав доступа (@login_required)
 - ✅ Заголовки безопасности для production
+- ✅ Защита от XSS (экранирование HTML в JavaScript)
 - ✅ Оптимизация запросов к БД
 
 ## Админ-панель
@@ -300,9 +301,10 @@ python manage.py test
 - ✅ Безопасная загрузка файлов (проверка типов и размеров)
 - ✅ CSRF защита для всех форм
 - ✅ Проверки прав доступа (@login_required)
-- ✅ Защита от XSS, clickjacking, MIME-sniffing
+- ✅ Защита от XSS (экранирование HTML), clickjacking, MIME-sniffing
 - ✅ Безопасные cookies в production (HTTPS)
 - ✅ HSTS заголовки для принудительного HTTPS
+- ✅ Защита от race conditions (get_or_create, транзакции с retry)
 
 ## Лицензия
 
