@@ -72,14 +72,14 @@ def conversation_detail(request, conversation_id):
         messages.error(request, 'Ошибка: беседа не найдена или некорректна.')
         return redirect('messages_app:conversations')
 
-    # Удаляем ВСЕ уведомления о сообщениях при открытии любой беседы
-    # (они не нужны, так как пользователь уже видит сообщения в беседе)
-    # Это нужно делать ДО получения сообщений, чтобы уведомления не успели отобразиться
+    # Отмечаем как прочитанные только уведомления по текущей беседе.
     from notifications.models import Notification
     Notification.objects.filter(
         recipient=request.user,
-        notification_type='message'
-    ).delete()
+        notification_type='message',
+        conversation=conversation,
+        is_read=False
+    ).update(is_read=True)
 
     # Получаем сообщения
     conversation_messages = conversation.messages.select_related('sender').order_by('created_at')

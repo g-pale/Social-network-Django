@@ -3,6 +3,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 from .forms import UserRegisterForm, UserLoginForm, UserProfileEditForm
 from posts.models import Post
 from followers.models import Follow
@@ -52,9 +54,15 @@ def login_view(request):
             login(request, user)
             username = form.cleaned_data.get('username')
             messages.success(request, f'Добро пожаловать, {username}!')
-            # Редирект на страницу, с которой пришел пользователь, или на главную
-            next_url = request.GET.get('next', 'posts:home')
-            return redirect(next_url)
+            # Редиректим только на безопасные локальные URL.
+            next_url = request.POST.get('next') or request.GET.get('next')
+            if next_url and url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                return redirect(next_url)
+            return redirect('posts:home')
     else:
         form = UserLoginForm()
 
@@ -62,6 +70,7 @@ def login_view(request):
 
 
 @login_required
+@require_POST
 def logout_view(request):
     """
     View для выхода пользователя из системы.
