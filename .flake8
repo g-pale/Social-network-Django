@@ -1,0 +1,11 @@
+[flake8]
+max-line-length = 120
+exclude =
+    .venv,
+    */migrations/*,
+    staticfiles,
+    __pycache__,
+    config/settings/__init__.py,
+    config/settings/dev.py,
+    config/settings/prod.py
+extend-ignore = E501

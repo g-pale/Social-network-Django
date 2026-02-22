@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 from .models import Post, Like, Comment
 
 
@@ -21,20 +22,30 @@ class PostAdmin(admin.ModelAdmin):
         }),
     )
 
+    def get_queryset(self, request):
+        """Оптимизация: аннотируем количество лайков и комментариев одним запросом"""
+        qs = super().get_queryset(request)
+        return qs.annotate(
+            _likes_count=Count('likes', distinct=True),
+            _comments_count=Count('comments', distinct=True),
+        )
+
     def text_preview(self, obj):
         """Превью текста поста"""
         return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
     text_preview.short_description = 'Текст'
 
     def get_likes_count(self, obj):
-        """Количество лайков"""
-        return obj.get_likes_count()
+        """Количество лайков (из аннотации)"""
+        return obj._likes_count
     get_likes_count.short_description = 'Лайки'
+    get_likes_count.admin_order_field = '_likes_count'
 
     def get_comments_count(self, obj):
-        """Количество комментариев"""
-        return obj.get_comments_count()
+        """Количество комментариев (из аннотации)"""
+        return obj._comments_count
     get_comments_count.short_description = 'Комментарии'
+    get_comments_count.admin_order_field = '_comments_count'
 
 
 @admin.register(Like)

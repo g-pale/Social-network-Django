@@ -1,4 +1,5 @@
 from django import forms
+from PIL import Image
 from .models import Post, Comment
 import os
 
@@ -45,8 +46,6 @@ class PostForm(forms.ModelForm):
         text = self.cleaned_data.get('text')
         if not text or not text.strip():
             raise forms.ValidationError('Текст поста не может быть пустым.')
-        if len(text) > 1000:
-            raise forms.ValidationError('Текст поста не может превышать 1000 символов.')
         return text.strip()
 
     def clean_image(self):
@@ -69,6 +68,14 @@ class PostForm(forms.ModelForm):
                 allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
                 if image.content_type not in allowed_mime_types:
                     raise forms.ValidationError('Недопустимый тип файла.')
+
+            # Проверка реального содержимого через Pillow
+            try:
+                img = Image.open(image)
+                img.verify()
+                image.seek(0)  # Сбрасываем указатель после verify
+            except Exception:
+                raise forms.ValidationError('Файл повреждён или не является изображением.')
 
         return image
 
@@ -105,6 +112,4 @@ class CommentForm(forms.ModelForm):
         text = self.cleaned_data.get('text')
         if not text or not text.strip():
             raise forms.ValidationError('Текст комментария не может быть пустым.')
-        if len(text) > 500:
-            raise forms.ValidationError('Текст комментария не может превышать 500 символов.')
         return text.strip()

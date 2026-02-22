@@ -1,0 +1,103 @@
+{% comment %}
+Карточка поста для ленты (home.html).
+Использование: {% include 'posts/includes/_post_card.html' with post=post is_liked=is_liked user=user %}
+{% endcomment %}
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <!-- Заголовок поста -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex align-items-center">
+                <!-- Аватар автора -->
+                {% include 'includes/_avatar.html' with user=post.author size=40 font_size=18 %}
+                <div>
+                    <h6 class="mb-0">
+                        <a href="{% url 'accounts:profile' post.author.username %}" class="text-decoration-none">
+                            {{ post.author.username }}
+                        </a>
+                    </h6>
+                    <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
+                </div>
+            </div>
+
+            <!-- Кнопки действий (только для автора) -->
+            {% if user.is_authenticated and user == post.author %}
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'posts:edit' post.pk %}">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger delete-post-link" href="#" data-bs-toggle="modal"
+                            data-bs-target="#deletePostModal" data-post-id="{{ post.pk }}"
+                            data-post-url="{% url 'posts:delete' post.pk %}"
+                            data-post-text="{{ post.text|truncatewords:20 }}">
+                            <i class="bi bi-trash"></i> Удалить
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Текст поста -->
+        <p class="card-text mb-3">
+            {% if post.text|length > 200 %}
+            {{ post.text|truncatewords:30 }}
+            <a href="{% url 'posts:detail' post.pk %}">Читать далее...</a>
+            {% else %}
+            {{ post.text|linebreaks }}
+            {% endif %}
+        </p>
+
+        <!-- Изображение поста -->
+        {% if post.image %}
+        <div class="mb-3">
+            <a href="{% url 'posts:detail' post.pk %}">
+                <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded">
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Информация о редактировании -->
+        {% if post.updated_at != post.created_at %}
+        <small class="text-muted">
+            <i class="bi bi-pencil"></i> Отредактировано: {{ post.updated_at|date:"d.m.Y H:i" }}
+        </small>
+        {% endif %}
+
+        <!-- Лайки и комментарии -->
+        <div class="mt-3 pt-3 border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    {% if user.is_authenticated and user != post.author %}
+                    <button
+                        class="btn btn-sm like-btn {% if is_liked %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                        data-post-id="{{ post.pk }}" data-liked="{% if is_liked %}true{% else %}false{% endif %}">
+                        <i class="bi bi-heart{% if is_liked %}-fill{% endif %}"></i>
+                        <span class="likes-count">{{ post.annotated_likes_count }}</span>
+                    </button>
+                    {% else %}
+                    <span class="text-muted">
+                        <i class="bi bi-heart"></i> <span class="likes-count">{{ post.annotated_likes_count }}</span>
+                        лайков
+                    </span>
+                    {% endif %}
+                    <span class="text-muted ms-3">
+                        <i class="bi bi-chat"></i> {{ post.annotated_comments_count }} комментариев
+                    </span>
+                </div>
+                <a href="{% url 'posts:detail' post.pk %}" class="btn btn-sm btn-outline-primary">
+                    Открыть <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

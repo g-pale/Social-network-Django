@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import UserRegisterForm, UserLoginForm, UserProfileEditForm
 from posts.models import Post
 from followers.models import Follow
@@ -96,8 +97,18 @@ def profile_view(request, username):
     else:
         order_by = '-created_at'  # Новые сверху (по умолчанию)
 
-    # Получаем посты пользователя
-    posts = Post.objects.filter(author=profile_user).select_related('author').order_by(order_by)[:10]
+    # Получаем посты пользователя с пагинацией
+    posts_queryset = Post.objects.filter(author=profile_user).select_related('author').order_by(order_by)
+
+    paginator = Paginator(posts_queryset, 10)
+    page = request.GET.get('page', 1)
+
+    try:
+        posts = paginator.page(page)
+    except PageNotAnInteger:
+        posts = paginator.page(1)
+    except EmptyPage:
+        posts = paginator.page(paginator.num_pages)
 
     # Статистика
     posts_count = profile_user.get_posts_count()
@@ -124,6 +135,7 @@ def profile_view(request, username):
         'is_following': is_following,
         'is_own_profile': is_own_profile,
         'sort_type': sort_type,
+        'is_paginated': paginator.num_pages > 1,
     }
 
     return render(request, 'accounts/profile.html', context)
@@ -152,14 +164,27 @@ def users_list_view(request):
     """
     View для отображения списка всех пользователей.
     """
-    users = User.objects.all().order_by('-date_joined')
+    users_queryset = User.objects.all().order_by('-date_joined')
 
     # Если пользователь авторизован, исключаем его из списка
     if request.user.is_authenticated:
-        users = users.exclude(pk=request.user.pk)
+        users_queryset = users_queryset.exclude(pk=request.user.pk)
+
+    # Пагинация: 12 пользователей на страницу
+    paginator = Paginator(users_queryset, 12)
+    page = request.GET.get('page', 1)
+
+    try:
+        users = paginator.page(page)
+    except PageNotAnInteger:
+        users = paginator.page(1)
+    except EmptyPage:
+        users = paginator.page(paginator.num_pages)
 
     context = {
         'users': users,
+        'is_paginated': paginator.num_pages > 1,
     }
 
     return render(request, 'accounts/users_list.html', context)
+

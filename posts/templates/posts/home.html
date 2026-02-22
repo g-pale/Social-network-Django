@@ -5,304 +5,173 @@
 
 {% block content %}
 {% if user.is_authenticated %}
-    <div class="row mb-4">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title mb-0">Что у вас на уме?</h5>
-                        </div>
-                        <a href="{% url 'posts:create' %}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle"></i> Создать пост
-                        </a>
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Что у вас на уме?</h5>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Переключатель фильтров и сортировки -->
-    <div class="row mb-3">
-        <div class="col-md-8 mx-auto">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="btn-group" role="group" aria-label="Фильтр постов">
-                    <a href="{% url 'posts:home' %}?filter=all{% if sort_type %}&sort={{ sort_type }}{% endif %}" 
-                       class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                        <i class="bi bi-globe"></i> Все посты
-                    </a>
-                    <a href="{% url 'posts:home' %}?filter=following{% if sort_type %}&sort={{ sort_type }}{% endif %}" 
-                       class="btn {% if filter_type == 'following' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                        <i class="bi bi-people"></i> От подписок
-                    </a>
-                </div>
-                <div class="btn-group" role="group" aria-label="Сортировка постов">
-                    <a href="{% url 'posts:home' %}?filter={{ filter_type }}&sort=newest" 
-                       class="btn btn-sm {% if sort_type == 'newest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
-                       title="Новые сверху">
-                        <i class="bi bi-sort-down"></i> Новые
-                    </a>
-                    <a href="{% url 'posts:home' %}?filter={{ filter_type }}&sort=oldest" 
-                       class="btn btn-sm {% if sort_type == 'oldest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
-                       title="Старые сверху">
-                        <i class="bi bi-sort-up"></i> Старые
+                    <a href="{% url 'posts:create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Создать пост
                     </a>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Переключатель фильтров и сортировки -->
+<div class="row mb-3">
+    <div class="col-md-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="btn-group" role="group" aria-label="Фильтр постов">
+                <a href="{% url 'posts:home' %}?filter=all{% if sort_type %}&sort={{ sort_type }}{% endif %}"
+                    class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="bi bi-globe"></i> Все посты
+                </a>
+                <a href="{% url 'posts:home' %}?filter=following{% if sort_type %}&sort={{ sort_type }}{% endif %}"
+                    class="btn {% if filter_type == 'following' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="bi bi-people"></i> От подписок
+                </a>
+            </div>
+            <div class="btn-group" role="group" aria-label="Сортировка постов">
+                <a href="{% url 'posts:home' %}?filter={{ filter_type }}&sort=newest"
+                    class="btn btn-sm {% if sort_type == 'newest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+                    title="Новые сверху">
+                    <i class="bi bi-sort-down"></i> Новые
+                </a>
+                <a href="{% url 'posts:home' %}?filter={{ filter_type }}&sort=oldest"
+                    class="btn btn-sm {% if sort_type == 'oldest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+                    title="Старые сверху">
+                    <i class="bi bi-sort-up"></i> Старые
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
 
 <div class="row">
     <div class="col-md-8 mx-auto">
         {% if posts %}
-            {% for item in posts_with_likes %}
-                {% with post=item.post is_liked=item.is_liked %}
-                <div class="card shadow mb-4">
-                    <div class="card-body">
-                        <!-- Заголовок поста -->
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div class="d-flex align-items-center">
-                                <!-- Аватар автора -->
-                                {% if post.author.avatar %}
-                                    <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}" 
-                                         class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                                {% else %}
-                                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" 
-                                         style="width: 40px; height: 40px; font-size: 18px;">
-                                        {{ post.author.username|first|upper }}
-                                    </div>
-                                {% endif %}
-                                <div>
-                                    <h6 class="mb-0">
-                                        <a href="{% url 'accounts:profile' post.author.username %}" class="text-decoration-none">
-                                            {{ post.author.username }}
-                                        </a>
-                                    </h6>
-                                    <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
-                                </div>
-                            </div>
-                            
-                            <!-- Кнопки действий (только для автора) -->
-                            {% if user.is_authenticated and user == post.author %}
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" href="{% url 'posts:edit' post.pk %}">
-                                                <i class="bi bi-pencil"></i> Редактировать
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <a class="dropdown-item text-danger delete-post-link" 
-                                               href="#" 
-                                               data-bs-toggle="modal" 
-                                               data-bs-target="#deletePostModal"
-                                               data-post-id="{{ post.pk }}"
-                                               data-post-url="{% url 'posts:delete' post.pk %}"
-                                               data-post-text="{{ post.text|truncatewords:20 }}">
-                                                <i class="bi bi-trash"></i> Удалить
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Текст поста -->
-                        <p class="card-text mb-3">
-                            {% if post.text|length > 200 %}
-                                {{ post.text|truncatewords:30 }}
-                                <a href="{% url 'posts:detail' post.pk %}">Читать далее...</a>
-                            {% else %}
-                                {{ post.text|linebreaks }}
-                            {% endif %}
-                        </p>
-                        
-                        <!-- Изображение поста -->
-                        {% if post.image %}
-                            <div class="mb-3">
-                                <a href="{% url 'posts:detail' post.pk %}">
-                                    <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded">
-                                </a>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Информация о редактировании -->
-                        {% if post.updated_at != post.created_at %}
-                            <small class="text-muted">
-                                <i class="bi bi-pencil"></i> Отредактировано: {{ post.updated_at|date:"d.m.Y H:i" }}
-                            </small>
-                        {% endif %}
-                        
-                        <!-- Лайки и комментарии -->
-                        <div class="mt-3 pt-3 border-top">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    {% if user.is_authenticated and user != post.author %}
-                                        <button class="btn btn-sm like-btn {% if is_liked %}btn-danger{% else %}btn-outline-danger{% endif %}" 
-                                                data-post-id="{{ post.pk }}" 
-                                                data-liked="{% if is_liked %}true{% else %}false{% endif %}">
-                                            <i class="bi bi-heart{% if is_liked %}-fill{% endif %}"></i> 
-                                            <span class="likes-count">{{ post.get_likes_count }}</span>
-                                        </button>
-                                    {% else %}
-                                        <span class="text-muted">
-                                            <i class="bi bi-heart"></i> <span class="likes-count">{{ post.get_likes_count }}</span> лайков
-                                        </span>
-                                    {% endif %}
-                                    <span class="text-muted ms-3">
-                                        <i class="bi bi-chat"></i> {{ post.get_comments_count }} комментариев
-                                    </span>
-                                </div>
-                                <a href="{% url 'posts:detail' post.pk %}" class="btn btn-sm btn-outline-primary">
-                                    Открыть <i class="bi bi-arrow-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endwith %}
-            {% endfor %}
-            
-            <!-- Пагинация -->
-            {% if is_paginated %}
-                <nav aria-label="Навигация по страницам" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if posts.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                    <i class="bi bi-chevron-double-left"></i> Первая
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ posts.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                    <i class="bi bi-chevron-left"></i> Предыдущая
-                                </a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link"><i class="bi bi-chevron-double-left"></i> Первая</span>
-                            </li>
-                            <li class="page-item disabled">
-                                <span class="page-link"><i class="bi bi-chevron-left"></i> Предыдущая</span>
-                            </li>
-                        {% endif %}
-                        
-                        <li class="page-item active">
-                            <span class="page-link">
-                                Страница {{ posts.number }} из {{ posts.paginator.num_pages }}
-                            </span>
-                        </li>
-                        
-                        {% if posts.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ posts.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                    Следующая <i class="bi bi-chevron-right"></i>
-                                </a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ posts.paginator.num_pages }}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                    Последняя <i class="bi bi-chevron-double-right"></i>
-                                </a>
-                            </li>
-                        {% else %}
-                            <li class="page-item disabled">
-                                <span class="page-link">Следующая <i class="bi bi-chevron-right"></i></span>
-                            </li>
-                            <li class="page-item disabled">
-                                <span class="page-link">Последняя <i class="bi bi-chevron-double-right"></i></span>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            {% endif %}
+        {% for item in posts_with_likes %}
+        {% with post=item.post is_liked=item.is_liked %}
+        {% include 'posts/includes/_post_card.html' %}
+        {% endwith %}
+        {% endfor %}
+
+        <!-- Пагинация -->
+        {% if is_paginated %}
+        <nav aria-label="Навигация по страницам" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if posts.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page=1{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i> Первая
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ posts.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i> Предыдущая
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="bi bi-chevron-double-left"></i> Первая</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="bi bi-chevron-left"></i> Предыдущая</span>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Страница {{ posts.number }} из {{ posts.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if posts.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ posts.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                        Следующая <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?page={{ posts.paginator.num_pages }}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                        Последняя <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Следующая <i class="bi bi-chevron-right"></i></span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">Последняя <i class="bi bi-chevron-double-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
         {% else %}
-            <div class="card shadow">
-                <div class="card-body text-center py-5">
-                    <h5 class="card-title">Пока нет постов</h5>
-                    <p class="text-muted">
-                        {% if user.is_authenticated %}
-                            {% if filter_type == 'following' %}
-                                У пользователей, на которых вы подписаны, пока нет постов.
-                                <br>Или вы еще ни на кого не подписаны.
-                            {% else %}
-                                Станьте первым, кто опубликует пост!
-                            {% endif %}
-                        {% else %}
-                            Зарегистрируйтесь, чтобы начать публиковать посты.
-                        {% endif %}
-                    </p>
+        <div class="card shadow">
+            <div class="card-body text-center py-5">
+                <h5 class="card-title">Пока нет постов</h5>
+                <p class="text-muted">
                     {% if user.is_authenticated %}
-                        {% if filter_type == 'following' %}
-                            <a href="{% url 'accounts:users_list' %}" class="btn btn-primary me-2">
-                                <i class="bi bi-people"></i> Найти пользователей
-                            </a>
-                        {% endif %}
-                        <a href="{% url 'posts:create' %}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle"></i> Создать первый пост
-                        </a>
+                    {% if filter_type == 'following' %}
+                    У пользователей, на которых вы подписаны, пока нет постов.
+                    <br>Или вы еще ни на кого не подписаны.
                     {% else %}
-                        <a href="{% url 'accounts:register' %}" class="btn btn-primary me-2">Зарегистрироваться</a>
-                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary">Войти</a>
+                    Станьте первым, кто опубликует пост!
                     {% endif %}
-                </div>
+                    {% else %}
+                    Зарегистрируйтесь, чтобы начать публиковать посты.
+                    {% endif %}
+                </p>
+                {% if user.is_authenticated %}
+                {% if filter_type == 'following' %}
+                <a href="{% url 'accounts:users_list' %}" class="btn btn-primary me-2">
+                    <i class="bi bi-people"></i> Найти пользователей
+                </a>
+                {% endif %}
+                <a href="{% url 'posts:create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Создать первый пост
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary me-2">Зарегистрироваться</a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary">Войти</a>
+                {% endif %}
             </div>
+        </div>
         {% endif %}
     </div>
 </div>
 
 <!-- Модальное окно для подтверждения удаления поста -->
-<div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="deletePostModalLabel">
-                    <i class="bi bi-exclamation-triangle"></i> Подтверждение удаления
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Вы уверены, что хотите удалить этот пост?</p>
-                <div class="alert alert-light" id="deletePostPreview">
-                    <p class="mb-0"><strong id="deletePostText"></strong></p>
-                </div>
-                <p class="text-muted small">Это действие нельзя отменить.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x"></i> Отмена
-                </button>
-                <form method="post" id="deletePostForm" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Да, удалить
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'posts/includes/_delete_post_modal.html' %}
 
 {% block extra_js %}
 <script src="{% static 'js/likes.js' %}"></script>
 <script>
     // Обработчик для модального окна удаления поста
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const deletePostModal = document.getElementById('deletePostModal');
         const deletePostForm = document.getElementById('deletePostForm');
         const deletePostText = document.getElementById('deletePostText');
-        
+
         if (deletePostModal) {
-            deletePostModal.addEventListener('show.bs.modal', function(event) {
+            deletePostModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 const postId = button.getAttribute('data-post-id');
                 const postUrl = button.getAttribute('data-post-url');
                 const postText = button.getAttribute('data-post-text');
-                
+
                 deletePostText.textContent = postText;
                 deletePostForm.action = postUrl;
             });

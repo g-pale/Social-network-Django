@@ -39,8 +39,7 @@ def search(request):
             users_queryset = User.objects.filter(
                 Q(username__icontains=query) |
                 Q(first_name__icontains=query) |
-                Q(last_name__icontains=query) |
-                Q(email__icontains=query)
+                Q(last_name__icontains=query)
             ).order_by('-date_joined')
 
             # Пагинация для пользователей

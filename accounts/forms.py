@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import get_user_model
+from PIL import Image
 import os
 
 User = get_user_model()
@@ -195,5 +196,13 @@ class UserProfileEditForm(forms.ModelForm):
                 allowed_mime_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
                 if avatar.content_type not in allowed_mime_types:
                     raise forms.ValidationError('Недопустимый тип файла.')
+
+            # Проверка реального содержимого через Pillow
+            try:
+                img = Image.open(avatar)
+                img.verify()
+                avatar.seek(0)  # Сбрасываем указатель после verify
+            except Exception:
+                raise forms.ValidationError('Файл повреждён или не является изображением.')
 
         return avatar

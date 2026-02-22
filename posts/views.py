@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Count
 from .models import Post, Like, Comment
 from .forms import PostForm, CommentForm
 from followers.models import Follow
@@ -31,7 +32,10 @@ def home(request):
         posts = (
             Post.objects.filter(author_id__in=following_ids)
             .select_related('author')
-            .prefetch_related('likes', 'comments')
+            .annotate(
+                annotated_likes_count=Count('likes', distinct=True),
+                annotated_comments_count=Count('comments', distinct=True),
+            )
             .order_by(order_by)
         )
     else:
@@ -39,7 +43,10 @@ def home(request):
         posts = (
             Post.objects.all()
             .select_related('author')
-            .prefetch_related('likes', 'comments')
+            .annotate(
+                annotated_likes_count=Count('likes', distinct=True),
+                annotated_comments_count=Count('comments', distinct=True),
+            )
             .order_by(order_by)
         )
 
@@ -54,15 +61,21 @@ def home(request):
     except EmptyPage:
         posts_page = paginator.page(paginator.num_pages)
 
+    # Batch-проверка лайков: один запрос вместо N
+    liked_post_ids = set()
+    if request.user.is_authenticated:
+        page_post_ids = [post.pk for post in posts_page]
+        liked_post_ids = set(
+            Like.objects.filter(user=request.user, post_id__in=page_post_ids)
+            .values_list('post_id', flat=True)
+        )
+
     # Добавляем информацию о лайках для каждого поста
     posts_with_likes = []
     for post in posts_page:
-        is_liked = False
-        if request.user.is_authenticated:
-            is_liked = post.is_liked_by(request.user)
         posts_with_likes.append({
             'post': post,
-            'is_liked': is_liked
+            'is_liked': post.pk in liked_post_ids,
         })
 
     context = {
