@@ -85,7 +85,7 @@ class NotificationViewTests(TestCase):
             notification_type="follow",
         )
         self.client.force_login(self.user)
-        response = self.client.post("/notifications/mark-all-read/")
+        self.client.post("/notifications/mark-all-read/")
         self.assertEqual(Notification.objects.filter(is_read=False).count(), 0)
 
     def test_unread_count_api(self):

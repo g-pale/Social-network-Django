@@ -10,14 +10,15 @@ class MessageForm(forms.ModelForm):
         fields = ['text']
         widgets = {
             'text': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
+                'class': 'form-control chat-input',
+                'rows': 1,
                 'placeholder': 'Введите сообщение...',
                 'maxlength': 2000,
+                'style': 'resize: none; overflow: hidden; padding-top: 0.75rem;',
             })
         }
         labels = {
-            'text': 'Сообщение'
+            'text': ''
         }
 
     def clean_text(self):

@@ -18,10 +18,15 @@ def search(request):
     users_results = None
 
     if query:
+        q_lower = query.lower()
+        q_title = query.title()
+        q_upper = query.upper()
+
         if search_type in ['all', 'posts']:
-            # Поиск по постам
+            # Поиск по постам (обход бага SQLite с регистром кириллицы)
             posts_queryset = Post.objects.filter(
-                Q(text__icontains=query) | Q(author__username__icontains=query)
+                Q(text__icontains=query) | Q(text__icontains=q_lower) | Q(text__icontains=q_title) | Q(text__icontains=q_upper) |
+                Q(author__username__icontains=query) | Q(author__username__icontains=q_lower) | Q(author__username__icontains=q_title) | Q(author__username__icontains=q_upper)
             ).select_related('author').prefetch_related('likes', 'comments').order_by('-created_at')
 
             # Пагинация для постов
@@ -35,11 +40,11 @@ def search(request):
                 posts_results = posts_paginator.page(posts_paginator.num_pages)
 
         if search_type in ['all', 'users']:
-            # Поиск по пользователям
+            # Поиск по пользователям (обход бага SQLite с регистром кириллицы)
             users_queryset = User.objects.filter(
-                Q(username__icontains=query) |
-                Q(first_name__icontains=query) |
-                Q(last_name__icontains=query)
+                Q(username__icontains=query) | Q(username__icontains=q_lower) | Q(username__icontains=q_title) | Q(username__icontains=q_upper) |
+                Q(first_name__icontains=query) | Q(first_name__icontains=q_lower) | Q(first_name__icontains=q_title) | Q(first_name__icontains=q_upper) |
+                Q(last_name__icontains=query) | Q(last_name__icontains=q_lower) | Q(last_name__icontains=q_title) | Q(last_name__icontains=q_upper)
             ).order_by('-date_joined')
 
             # Пагинация для пользователей

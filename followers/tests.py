@@ -47,7 +47,7 @@ class FollowToggleTests(TestCase):
     def test_cannot_follow_self(self):
         """Нельзя подписаться на себя"""
         self.client.force_login(self.user1)
-        response = self.client.post(
+        self.client.post(
             reverse("followers:toggle_follow", kwargs={"username": self.user1.username}),
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )

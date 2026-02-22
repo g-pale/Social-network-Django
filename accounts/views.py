@@ -187,4 +187,3 @@ def users_list_view(request):
     }
 
     return render(request, 'accounts/users_list.html', context)
-

@@ -12,19 +12,18 @@
                 <div class="d-flex align-items-center">
                     <!-- Аватар собеседника -->
                     {% if other_participant.avatar %}
-                        <img src="{{ other_participant.avatar.url }}" 
-                             alt="{{ other_participant.username }}" 
-                             class="rounded-circle me-2" 
-                             style="width: 40px; height: 40px; object-fit: cover;">
+                    <img src="{{ other_participant.avatar.url }}" alt="{{ other_participant.username }}"
+                        class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                     {% else %}
-                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" 
-                             style="width: 40px; height: 40px; font-size: 16px;">
-                            {{ other_participant.username|first|upper }}
-                        </div>
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2"
+                        style="width: 40px; height: 40px; font-size: 16px;">
+                        {{ other_participant.username|first|upper }}
+                    </div>
                     {% endif %}
                     <div>
                         <h5 class="mb-0">
-                            <a href="{% url 'accounts:profile' other_participant.username %}" class="text-decoration-none">
+                            <a href="{% url 'accounts:profile' other_participant.username %}"
+                                class="text-decoration-none">
                                 {{ other_participant.username }}
                             </a>
                         </h5>
@@ -34,67 +33,54 @@
                     <i class="bi bi-arrow-left"></i> Назад
                 </a>
             </div>
-            
+
             <!-- Сообщения -->
-            <div class="card-body" id="messages-container" style="height: 500px; overflow-y: auto;">
+            <div class="card-body bg-light chat-container" id="messages-container">
                 {% if is_paginated and messages.has_previous %}
-                    <div class="text-center mb-3">
-                        <a href="?page={{ messages.previous_page_number }}" class="btn btn-sm btn-outline-primary">
-                            Загрузить предыдущие сообщения
-                        </a>
-                    </div>
+                <div class="text-center mb-3">
+                    <a href="?page={{ messages.previous_page_number }}"
+                        class="badge bg-secondary text-decoration-none py-2 px-3">
+                        Загрузить предыдущие сообщения
+                    </a>
+                </div>
                 {% endif %}
-                
-                <div id="messages-list">
+
+                <div id="messages-list" class="d-flex flex-column gap-2">
                     {% for message in messages %}
-                        <div class="mb-3 {% if message.sender == user %}text-end{% endif %}">
-                            <div class="d-inline-block {% if message.sender == user %}bg-primary text-white{% else %}bg-light{% endif %} rounded p-2" 
-                                 style="max-width: 70%;">
-                                <div class="d-flex align-items-start">
-                                    {% if message.sender != user %}
-                                        <!-- Аватар отправителя -->
-                                        {% if message.sender.avatar %}
-                                            <img src="{{ message.sender.avatar.url }}" 
-                                                 alt="{{ message.sender.username }}" 
-                                                 class="rounded-circle me-2" 
-                                                 style="width: 30px; height: 30px; object-fit: cover;">
-                                        {% else %}
-                                            <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2" 
-                                                 style="width: 30px; height: 30px; font-size: 12px;">
-                                                {{ message.sender.username|first|upper }}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
-                                    <div class="flex-grow-1">
-                                        {% if message.sender != user %}
-                                            <small class="d-block mb-1">
-                                                <strong>{{ message.sender.username }}</strong>
-                                            </small>
-                                        {% endif %}
-                                        <p class="mb-1">{{ message.text|linebreaks }}</p>
-                                        <small class="text-muted">
-                                            {{ message.created_at|date:"d.m.Y H:i" }}
-                                        </small>
-                                    </div>
-                                </div>
+                    <!-- Разделитель даты (опционально можно добавить логику в представление, здесь заглушка для визуального отступа) -->
+                    <div
+                        class="d-flex w-100 {% if message.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                        <div
+                            class="message-bubble {% if message.sender == user %}sent{% else %}received shadow-sm{% endif %}">
+                            <!-- Текст сообщения -->
+                            <div class="mb-1" style="word-wrap: break-word;">
+                                {{ message.text|linebreaksbr }}
+                            </div>
+                            <!-- Время -->
+                            <div class="text-end" style="font-size: 0.7rem; opacity: 0.8;">
+                                {{ message.created_at|date:"H:i" }}
                             </div>
                         </div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-            
+
             <!-- Форма отправки сообщения -->
-            <div class="card-footer">
+            <div class="card-footer bg-white border-top-0 py-3">
                 <form id="message-form" method="post" action="{% url 'messages_app:send_message' conversation.id %}">
                     {% csrf_token %}
-                    <div class="input-group">
+                    <div class="d-flex align-items-end bg-white border rounded-4 shadow-sm focus-ring-wrapper overflow-hidden"
+                        style="padding-right: 4px; padding-bottom: 4px; padding-top: 4px;">
                         {{ form.text }}
-                        <button type="submit" class="btn btn-primary" id="send-button">
-                            <i class="bi bi-send"></i> Отправить
+                        <button type="submit"
+                            class="btn btn-primary rounded-circle mb-1 me-1 ms-2 d-flex align-items-center justify-content-center"
+                            id="send-button" style="width: 40px; height: 40px; flex-shrink: 0;">
+                            <i class="bi bi-send-fill ms-1"></i>
                         </button>
                     </div>
                     {% if form.text.errors %}
-                        <div class="text-danger small mt-1">{{ form.text.errors }}</div>
+                    <div class="text-danger small mt-2 ms-3">{{ form.text.errors }}</div>
                     {% endif %}
                 </form>
             </div>
@@ -106,40 +92,61 @@
 {% block extra_js %}
 <script src="{% static 'js/messages.js' %}"></script>
 <script>
-// Скрываем все уведомления о сообщениях на странице беседы
-document.addEventListener('DOMContentLoaded', function() {
-    function hideMessageNotifications() {
-        // Ищем все элементы, которые могут содержать уведомления
-        const containers = document.querySelectorAll('.container, .list-group, .alert, [class*="notification"]');
-        containers.forEach(function(container) {
-            // Проверяем, содержит ли контейнер текст "Сообщение от"
-            if (container.textContent && container.textContent.includes('Сообщение от')) {
-                // Проверяем, что это не само окно беседы
-                if (!container.closest('#messages-list') && 
-                    !container.closest('#messages-container') &&
-                    !container.closest('.card-body')) {
-                    container.style.display = 'none';
+    // Скрываем все уведомления о сообщениях на странице беседы
+    document.addEventListener('DOMContentLoaded', function () {
+        function hideMessageNotifications() {
+            // Ищем все элементы, которые могут содержать уведомления
+            const containers = document.querySelectorAll('.container, .list-group, .alert, [class*="notification"]');
+            containers.forEach(function (container) {
+                // Проверяем, содержит ли контейнер текст "Сообщение от"
+                if (container.textContent && container.textContent.includes('Сообщение от')) {
+                    // Проверяем, что это не само окно беседы
+                    if (!container.closest('#messages-list') &&
+                        !container.closest('#messages-container') &&
+                        !container.closest('.card-body')) {
+                        container.style.display = 'none';
+                    }
                 }
-            }
-        });
-        
-        // Также ищем элементы с классом notification-item, которые содержат "Сообщение от"
-        const notificationItems = document.querySelectorAll('.notification-item, .list-group-item');
-        notificationItems.forEach(function(item) {
-            if (item.textContent && item.textContent.includes('Сообщение от')) {
-                if (!item.closest('#messages-list') && 
-                    !item.closest('#messages-container')) {
-                    item.style.display = 'none';
-                    item.remove();
+            });
+
+            // Также ищем элементы с классом notification-item, которые содержат "Сообщение от"
+            const notificationItems = document.querySelectorAll('.notification-item, .list-group-item');
+            notificationItems.forEach(function (item) {
+                if (item.textContent && item.textContent.includes('Сообщение от')) {
+                    if (!item.closest('#messages-list') &&
+                        !item.closest('#messages-container')) {
+                        item.style.display = 'none';
+                        item.remove();
+                    }
                 }
-            }
-        });
-    }
-    
-    // Вызываем сразу и через небольшую задержку (на случай динамической загрузки)
-    hideMessageNotifications();
-    setTimeout(hideMessageNotifications, 100);
-    setTimeout(hideMessageNotifications, 500);
-});
+            });
+        }
+
+        // Вызываем сразу и через небольшую задержку (на случай динамической загрузки)
+        hideMessageNotifications();
+        setTimeout(hideMessageNotifications, 100);
+        setTimeout(hideMessageNotifications, 500);
+
+        // Авто-расширение поля ввода
+        const chatInput = document.querySelector('.chat-input');
+        if (chatInput) {
+            chatInput.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if (this.value === '') {
+                    this.style.height = 'auto'; // Сброс при пустом поле
+                }
+            });
+            // Позволяем отправлять по Enter (Shift+Enter для переноса строки)
+            chatInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (this.value.trim() !== '') {
+                        document.getElementById('send-button').click();
+                    }
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

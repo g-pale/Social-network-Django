@@ -3,11 +3,11 @@
 Использование: {% include 'includes/_avatar.html' with user=some_user size=40 font_size=18 %}
 {% endcomment %}
 {% if user.avatar %}
-<img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="rounded-circle me-2"
-    style="width: {{ size }}px; height: {{ size }}px; object-fit: cover;">
+<img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="rounded-circle me-2 shadow-sm"
+    style="width: {{ size }}px; height: {{ size }}px; object-fit: cover; border: 2px solid white;">
 {% else %}
-<div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2"
-    style="width: {{ size }}px; height: {{ size }}px; font-size: {{ font_size }}px;">
+<div class="rounded-circle text-white d-inline-flex align-items-center justify-content-center me-2 shadow-sm fw-bold"
+    style="width: {{ size }}px; height: {{ size }}px; font-size: {{ font_size }}px; background: linear-gradient(135deg, var(--bs-primary), #8B5CF6);">
     {{ user.username|first|upper }}
 </div>
 {% endif %}

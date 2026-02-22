@@ -1,33 +1,33 @@
 // Обработка отправки сообщений
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const messageForm = document.getElementById('message-form');
     const messagesContainer = document.getElementById('messages-container');
     const messagesList = document.getElementById('messages-list');
     const sendButton = document.getElementById('send-button');
-    
+
     if (messageForm) {
         // Предотвращаем двойную отправку
         let isProcessing = false;
-        
-        messageForm.addEventListener('submit', function(e) {
+
+        messageForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             if (isProcessing) {
                 return false;
             }
-            
+
             const formData = new FormData(this);
             const messageText = formData.get('text').trim();
-            
+
             if (!messageText) {
                 return false;
             }
-            
+
             isProcessing = true;
             sendButton.disabled = true;
-            sendButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Отправка...';
-            
+            sendButton.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
             fetch(this.action, {
                 method: 'POST',
                 headers: {
@@ -36,46 +36,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Добавляем новое сообщение в список
-                    addMessageToDOM(data.message, true);
-                    
-                    // Очищаем форму
-                    const textInput = this.querySelector('textarea[name="text"]');
-                    if (textInput) {
-                        textInput.value = '';
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Добавляем новое сообщение в список
+                        addMessageToDOM(data.message, true);
+
+                        // Очищаем форму
+                        const textInput = this.querySelector('textarea[name="text"]');
+                        if (textInput) {
+                            textInput.value = '';
+                            textInput.style.height = 'auto'; // Сброс высоты
+                        }
+
+                        // Прокручиваем вниз
+                        scrollToBottom();
+                    } else {
+                        alert('Ошибка при отправке сообщения: ' + (data.error || 'Неизвестная ошибка'));
                     }
-                    
-                    // Прокручиваем вниз
-                    scrollToBottom();
-                } else {
-                    alert('Ошибка при отправке сообщения: ' + (data.error || 'Неизвестная ошибка'));
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                alert('Произошла ошибка при отправке сообщения');
-            })
-            .finally(() => {
-                isProcessing = false;
-                sendButton.disabled = false;
-                sendButton.innerHTML = '<i class="bi bi-send"></i> Отправить';
-            });
-            
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Произошла ошибка при отправке сообщения');
+                })
+                .finally(() => {
+                    isProcessing = false;
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="bi bi-send-fill ms-1"></i>';
+                });
+
             return false;
         });
     }
-    
+
     // Прокручиваем вниз при загрузке страницы
     if (messagesContainer) {
         scrollToBottom();
     }
-    
+
     // Автоматическое обновление сообщений каждые 5 секунд
     if (messagesContainer) {
-        setInterval(function() {
+        setInterval(function () {
             updateMessages();
         }, 5000);
     }
@@ -85,32 +86,29 @@ document.addEventListener('DOMContentLoaded', function() {
 function addMessageToDOM(messageData, isOwn) {
     const messagesList = document.getElementById('messages-list');
     if (!messagesList) return;
-    
+
     const messageDiv = document.createElement('div');
-    messageDiv.className = `mb-3 ${isOwn ? 'text-end' : ''}`;
-    
+    messageDiv.className = `d-flex w-100 ${isOwn ? 'justify-content-end' : 'justify-content-start'}`;
+
+    // Эскейпим текст и конвертируем переносы строк
+    const safeText = escapeHtml(messageData.text).replace(/\n/g, '<br>');
+
     const messageContent = `
-        <div class="d-inline-block ${isOwn ? 'bg-primary text-white' : 'bg-light'} rounded p-2" 
-             style="max-width: 70%;">
-            <div class="d-flex align-items-start">
-                ${!isOwn ? `
-                    <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2" 
-                         style="width: 30px; height: 30px; font-size: 12px;">
-                        ${messageData.sender.charAt(0).toUpperCase()}
-                    </div>
-                ` : ''}
-                <div class="flex-grow-1">
-                    ${!isOwn ? `<small class="d-block mb-1"><strong>${messageData.sender}</strong></small>` : ''}
-                    <p class="mb-1">${escapeHtml(messageData.text).replace(/\n/g, '<br>')}</p>
-                    <small class="text-muted">${messageData.created_at}</small>
-                </div>
+        <div class="message-bubble ${isOwn ? 'sent' : 'received shadow-sm'}">
+            <!-- Текст сообщения -->
+            <div class="mb-1" style="word-wrap: break-word; text-align: left;">
+                ${safeText}
+            </div>
+            <!-- Время -->
+            <div class="text-end" style="font-size: 0.7rem; opacity: 0.8;">
+                ${messageData.created_at}
             </div>
         </div>
     `;
-    
+
     messageDiv.innerHTML = messageContent;
     messagesList.appendChild(messageDiv);
-    
+
     scrollToBottom();
 }
 

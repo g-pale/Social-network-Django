@@ -131,7 +131,7 @@ def conversation_detail(request, conversation_id):
                         'id': message.id,
                         'text': message.text,
                         'sender': message.sender.username,
-                        'created_at': message.created_at.strftime('%d.%m.%Y %H:%M'),
+                        'created_at': message.created_at.strftime('%H:%M'),
                         'avatar_url': message.sender.avatar.url if message.sender.avatar else None,
                     }
                 })
@@ -218,7 +218,7 @@ def send_message(request, conversation_id):
                 'id': message.id,
                 'text': message.text,
                 'sender': message.sender.username,
-                'created_at': message.created_at.strftime('%d.%m.%Y %H:%M'),
+                'created_at': message.created_at.strftime('%H:%M'),
                 'avatar_url': message.sender.avatar.url if message.sender.avatar else None,
             }
         })

@@ -7,61 +7,66 @@
 <div class="row">
     <!-- Информация о пользователе -->
     <div class="col-md-4 mb-4">
-        <div class="card shadow">
-            <div class="card-body text-center">
-                <!-- Аватар -->
-                {% if profile_user.avatar %}
-                <img src="{{ profile_user.avatar.url }}" alt="{{ profile_user.username }}" class="rounded-circle mb-3"
-                    style="width: 150px; height: 150px; object-fit: cover;">
-                {% else %}
-                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3"
-                    style="width: 150px; height: 150px; font-size: 60px;">
-                    {{ profile_user.username|first|upper }}
+        <div class="card mb-4 overflow-hidden border-0 shadow">
+            <!-- Обложка профиля (Cover) -->
+            <div class="profile-cover"></div>
+
+            <div class="card-body position-relative text-center profile-body-content pb-4">
+                <!-- Аватар (со смещением вверх) -->
+                <div class="profile-avatar-wrapper">
+                    {% if profile_user.avatar %}
+                    <img src="{{ profile_user.avatar.url }}" alt="{{ profile_user.username }}" class="rounded-circle"
+                        style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center text-white fw-bold"
+                        style="width: 120px; height: 120px; font-size: 48px; background: linear-gradient(135deg, var(--bs-primary), #8B5CF6);">
+                        {{ profile_user.username|first|upper }}
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
 
                 <!-- Имя пользователя -->
-                <h2 class="card-title">{{ profile_user.username }}</h2>
+                <h2 class="card-title fw-bold mt-2">{{ profile_user.username }}</h2>
 
                 <!-- Имя и фамилия -->
                 {% if profile_user.first_name or profile_user.last_name %}
-                <p class="text-muted">{{ profile_user.get_full_name }}</p>
+                <p class="text-muted mb-1">{{ profile_user.get_full_name }}</p>
                 {% endif %}
 
                 <!-- Email -->
-                <p class="text-muted small">
+                <p class="text-muted small mb-3">
                     <i class="bi bi-envelope"></i> {{ profile_user.email }}
                 </p>
 
                 <!-- О себе -->
                 {% if profile_user.bio %}
-                <p class="card-text mt-3">{{ profile_user.bio }}</p>
+                <p class="card-text">{{ profile_user.bio }}</p>
                 {% endif %}
 
                 <!-- Дата регистрации -->
-                <p class="text-muted small mt-3">
+                <p class="text-muted small">
                     <i class="bi bi-calendar"></i>
                     Зарегистрирован: {{ profile_user.date_joined|date:"d.m.Y" }}
                 </p>
 
                 <!-- Кнопки действий -->
-                <div class="mt-4">
+                <div class="mt-4 d-flex justify-content-center gap-2 flex-wrap">
                     {% if is_own_profile %}
-                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary rounded-pill px-4">
                         <i class="bi bi-pencil"></i> Редактировать профиль
                     </a>
                     {% else %}
                     {% if request.user.is_authenticated %}
                     <button type="button"
-                        class="btn {% if is_following %}btn-outline-danger{% else %}btn-primary{% endif %} follow-btn"
+                        class="btn {% if is_following %}btn-outline-secondary{% else %}btn-primary{% endif %} rounded-pill px-4 follow-btn"
                         data-username="{{ profile_user.username }}"
                         data-following="{% if is_following %}true{% else %}false{% endif %}">
                         <i class="bi bi-person-{% if is_following %}dash{% else %}plus{% endif %}"></i>
                         <span class="follow-text">{% if is_following %}Отписаться{% else %}Подписаться{% endif %}</span>
                     </button>
                     <a href="{% url 'messages_app:start_conversation' profile_user.username %}"
-                        class="btn btn-outline-primary mt-2 d-block">
-                        <i class="bi bi-chat-dots"></i> Написать сообщение
+                        class="btn btn-outline-primary rounded-pill px-4">
+                        <i class="bi bi-chat-dots"></i> Написать
                     </a>
                     {% endif %}
                     {% endif %}
@@ -70,29 +75,30 @@
         </div>
 
         <!-- Статистика -->
-        <div class="card shadow mt-3">
+        <div class="card border-0 shadow mt-4">
             <div class="card-body">
-                <h5 class="card-title">Статистика</h5>
+                <h6 class="card-subtitle mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.05em;">
+                    Статистика</h6>
                 <div class="row text-center">
                     <div class="col-4">
-                        <div class="h4 mb-0">{{ posts_count }}</div>
+                        <div class="fs-3 fw-bold text-primary mb-0">{{ posts_count }}</div>
                         <small class="text-muted">Постов</small>
                     </div>
-                    <div class="col-4">
+                    <div class="col-4 border-start border-end">
                         <a href="{% url 'followers:followers_list' profile_user.username %}"
                             class="text-decoration-none text-dark d-block" title="Просмотреть список подписчиков">
-                            <div class="h4 mb-0" id="followers-count">{{ followers_count }}</div>
+                            <div class="fs-3 fw-bold text-primary mb-0" id="followers-count">{{ followers_count }}</div>
                             <small class="text-muted">
-                                <i class="bi bi-people"></i> Подписчиков
+                                Подписчиков
                             </small>
                         </a>
                     </div>
                     <div class="col-4">
                         <a href="{% url 'followers:following_list' profile_user.username %}"
                             class="text-decoration-none text-dark d-block" title="Просмотреть список подписок">
-                            <div class="h4 mb-0">{{ following_count }}</div>
+                            <div class="fs-3 fw-bold text-primary mb-0">{{ following_count }}</div>
                             <small class="text-muted">
-                                <i class="bi bi-person-check"></i> Подписок
+                                Подписок
                             </small>
                         </a>
                     </div>
@@ -100,125 +106,126 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Посты пользователя -->
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-post"></i> Посты пользователя
-                    </h5>
-                    <div class="btn-group btn-group-sm" role="group" aria-label="Сортировка постов">
-                        <a href="{% url 'accounts:profile' profile_user.username %}?sort=newest"
-                            class="btn {% if sort_type == 'newest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
-                            title="Новые сверху">
-                            <i class="bi bi-sort-down"></i> Новые
-                        </a>
-                        <a href="{% url 'accounts:profile' profile_user.username %}?sort=oldest"
-                            class="btn {% if sort_type == 'oldest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
-                            title="Старые сверху">
-                            <i class="bi bi-sort-up"></i> Старые
-                        </a>
-                    </div>
+<!-- Посты пользователя -->
+<div class="col-md-8">
+    <div class="card shadow">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-post"></i> Посты пользователя
+                </h5>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Сортировка постов">
+                    <a href="{% url 'accounts:profile' profile_user.username %}?sort=newest"
+                        class="btn {% if sort_type == 'newest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+                        title="Новые сверху">
+                        <i class="bi bi-sort-down"></i> Новые
+                    </a>
+                    <a href="{% url 'accounts:profile' profile_user.username %}?sort=oldest"
+                        class="btn {% if sort_type == 'oldest' %}btn-secondary{% else %}btn-outline-secondary{% endif %}"
+                        title="Старые сверху">
+                        <i class="bi bi-sort-up"></i> Старые
+                    </a>
                 </div>
             </div>
-            <div class="card-body">
-                {% if posts %}
-                <div class="list-group">
-                    {% for post in posts %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between mb-2">
-                            <h6 class="mb-1">
-                                <a href="{% url 'posts:detail' post.pk %}" class="text-decoration-none">
-                                    {{ post.text|truncatewords:20 }}
-                                </a>
-                            </h6>
-                            <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
-                        </div>
-                        {% if post.image %}
-                        <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded mb-2"
-                            style="max-height: 200px;">
-                        {% endif %}
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="bi bi-heart"></i> {{ post.get_likes_count }}
-                                <i class="bi bi-chat ms-2"></i> {{ post.get_comments_count }}
-                            </small>
-                            <a href="{% url 'posts:detail' post.pk %}" class="btn btn-sm btn-outline-primary">
-                                Читать далее
+        </div>
+        <div class="card-body">
+            {% if posts %}
+            <div class="list-group">
+                {% for post in posts %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between mb-2">
+                        <h6 class="mb-1">
+                            <a href="{% url 'posts:detail' post.pk %}" class="text-decoration-none">
+                                {{ post.text|truncatewords:20 }}
                             </a>
-                        </div>
+                        </h6>
+                        <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
                     </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-muted text-center py-4">
-                    {% if is_own_profile %}
-                    У вас пока нет постов. <a href="{% url 'posts:create' %}">Создайте первый пост!</a>
-                    {% else %}
-                    У этого пользователя пока нет постов.
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded mb-2"
+                        style="max-height: 200px;">
                     {% endif %}
-                </p>
-                {% endif %}
-
-                {% if is_paginated %}
-                <nav aria-label="Навигация по страницам" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if posts.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                <i class="bi bi-chevron-double-left"></i> Первая
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link"
-                                href="?page={{ posts.previous_page_number }}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                <i class="bi bi-chevron-left"></i> Предыдущая
-                            </a>
-                        </li>
-                        {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link"><i class="bi bi-chevron-double-left"></i> Первая</span>
-                        </li>
-                        <li class="page-item disabled">
-                            <span class="page-link"><i class="bi bi-chevron-left"></i> Предыдущая</span>
-                        </li>
-                        {% endif %}
-
-                        <li class="page-item active">
-                            <span class="page-link">
-                                Страница {{ posts.number }} из {{ posts.paginator.num_pages }}
-                            </span>
-                        </li>
-
-                        {% if posts.has_next %}
-                        <li class="page-item">
-                            <a class="page-link"
-                                href="?page={{ posts.next_page_number }}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                Следующая <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link"
-                                href="?page={{ posts.paginator.num_pages }}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
-                                Последняя <i class="bi bi-chevron-double-right"></i>
-                            </a>
-                        </li>
-                        {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">Следующая <i class="bi bi-chevron-right"></i></span>
-                        </li>
-                        <li class="page-item disabled">
-                            <span class="page-link">Последняя <i class="bi bi-chevron-double-right"></i></span>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-heart"></i> {{ post.get_likes_count }}
+                            <i class="bi bi-chat ms-2"></i> {{ post.get_comments_count }}
+                        </small>
+                        <a href="{% url 'posts:detail' post.pk %}" class="btn btn-sm btn-outline-primary">
+                            Читать далее
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <p class="text-muted text-center py-4">
+                {% if is_own_profile %}
+                У вас пока нет постов. <a href="{% url 'posts:create' %}">Создайте первый пост!</a>
+                {% else %}
+                У этого пользователя пока нет постов.
+                {% endif %}
+            </p>
+            {% endif %}
+
+            {% if is_paginated %}
+            <nav aria-label="Навигация по страницам" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if posts.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                            <i class="bi bi-chevron-double-left"></i> Первая
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ posts.previous_page_number }}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i> Предыдущая
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-double-left"></i> Первая</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="bi bi-chevron-left"></i> Предыдущая</span>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Страница {{ posts.number }} из {{ posts.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if posts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ posts.next_page_number }}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                            Следующая <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ posts.paginator.num_pages }}{% if sort_type %}&sort={{ sort_type }}{% endif %}">
+                            Последняя <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Следующая <i class="bi bi-chevron-right"></i></span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">Последняя <i class="bi bi-chevron-double-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         </div>
     </div>
+</div>
 </div>
 
 {% block extra_js %}

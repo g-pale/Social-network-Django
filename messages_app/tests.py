@@ -22,7 +22,7 @@ class ConversationTests(TestCase):
     def test_start_conversation(self):
         """Начать новую беседу"""
         self.client.force_login(self.user1)
-        response = self.client.get(
+        self.client.get(
             reverse("messages_app:start_conversation", kwargs={"username": self.user2.username})
         )
         # Должен создать беседу и редиректнуть
@@ -34,7 +34,7 @@ class ConversationTests(TestCase):
     def test_start_conversation_with_self_denied(self):
         """Нельзя начать беседу с самим собой"""
         self.client.force_login(self.user1)
-        response = self.client.get(
+        self.client.get(
             reverse("messages_app:start_conversation", kwargs={"username": self.user1.username})
         )
         self.assertEqual(Conversation.objects.count(), 0)

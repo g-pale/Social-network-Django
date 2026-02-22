@@ -5,53 +5,53 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header">
-                <h4 class="mb-0">
-                    <i class="bi bi-plus-circle"></i> Создать новый пост
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0 text-center">
+                <h4 class="mb-0 fw-bold text-primary">
+                    <i class="bi bi-pencil-square"></i> Создать новый пост
                 </h4>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4 p-md-5">
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
-                    
+
                     <div class="mb-3">
                         <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}</label>
                         {{ form.text }}
                         {% if form.text.help_text %}
-                            <div class="form-text">{{ form.text.help_text }}</div>
+                        <div class="form-text">{{ form.text.help_text }}</div>
                         {% endif %}
                         {% if form.text.errors %}
-                            <div class="text-danger small">{{ form.text.errors }}</div>
+                        <div class="text-danger small">{{ form.text.errors }}</div>
                         {% endif %}
                         <small class="text-muted" id="char-count">0 / 1000 символов</small>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
                         {{ form.image }}
                         {% if form.image.help_text %}
-                            <div class="form-text">{{ form.image.help_text }}</div>
+                        <div class="form-text">{{ form.image.help_text }}</div>
                         {% endif %}
                         {% if form.image.errors %}
-                            <div class="text-danger small">{{ form.image.errors }}</div>
+                        <div class="text-danger small">{{ form.image.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {% for error in form.non_field_errors %}
-                                <div>{{ error }}</div>
-                            {% endfor %}
-                        </div>
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
-                    
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'posts:home' %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Отмена
+
+                    <div class="d-flex justify-content-between mt-5">
+                        <a href="{% url 'posts:home' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                            Отмена
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Опубликовать
+                        <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm">
+                            <i class="bi bi-send-fill"></i> Опубликовать
                         </button>
                     </div>
                 </form>
@@ -63,22 +63,22 @@
 {% block extra_js %}
 <script>
     // Подсчет символов в тексте поста
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const textArea = document.getElementById('{{ form.text.id_for_label }}');
         const charCount = document.getElementById('char-count');
-        
+
         if (textArea && charCount) {
-            textArea.addEventListener('input', function() {
+            textArea.addEventListener('input', function () {
                 const length = this.value.length;
                 charCount.textContent = length + ' / 1000 символов';
-                
+
                 if (length > 1000) {
                     charCount.classList.add('text-danger');
                 } else {
                     charCount.classList.remove('text-danger');
                 }
             });
-            
+
             // Инициализация при загрузке страницы
             const length = textArea.value.length;
             charCount.textContent = length + ' / 1000 символов';

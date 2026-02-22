@@ -54,7 +54,7 @@ class PostCreateTests(TestCase):
     def test_create_post(self):
         """Создание поста"""
         self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.post(
             reverse("posts:create"),
             data={"text": "Мой новый пост"},
         )
@@ -65,7 +65,7 @@ class PostCreateTests(TestCase):
 
     def test_create_post_requires_auth(self):
         """Создание поста требует авторизации"""
-        response = self.client.post(
+        self.client.post(
             reverse("posts:create"),
             data={"text": "Unauthorized post"},
         )
@@ -74,7 +74,7 @@ class PostCreateTests(TestCase):
     def test_create_post_empty_text(self):
         """Пустой текст отклоняется"""
         self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.post(
             reverse("posts:create"),
             data={"text": "   "},
         )
@@ -117,7 +117,7 @@ class LikeTests(TestCase):
     def test_cannot_like_own_post(self):
         """Нельзя лайкать свой пост"""
         self.client.force_login(self.author)
-        response = self.client.post(
+        self.client.post(
             reverse("posts:toggle_like", kwargs={"pk": self.post.pk}),
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
@@ -166,7 +166,7 @@ class CommentTests(TestCase):
             post=self.post, author=self.author, text="Author comment"
         )
         self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.post(
             reverse("posts:delete_comment", kwargs={"pk": comment.pk}),
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )

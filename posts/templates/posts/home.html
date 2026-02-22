@@ -7,16 +7,12 @@
 {% if user.is_authenticated %}
 <div class="row mb-4">
     <div class="col-md-8 mx-auto">
-        <div class="card shadow">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="card-title mb-0">Что у вас на уме?</h5>
-                    </div>
-                    <a href="{% url 'posts:create' %}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Создать пост
-                    </a>
-                </div>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 fw-bold text-muted">Что у вас на уме, {{ user.username }}?</h5>
+                <a href="{% url 'posts:create' %}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-pencil-square"></i> Написать пост
+                </a>
             </div>
         </div>
     </div>
@@ -119,34 +115,40 @@
         </nav>
         {% endif %}
         {% else %}
-        <div class="card shadow">
-            <div class="card-body text-center py-5">
-                <h5 class="card-title">Пока нет постов</h5>
-                <p class="text-muted">
+        <div class="card border-0 shadow-sm text-center py-5">
+            <div class="card-body">
+                <div class="mb-4 text-muted">
+                    <i class="bi bi-journal-x" style="font-size: 4rem; opacity: 0.5;"></i>
+                </div>
+                <h4 class="card-title fw-bold mb-3">Пока нет постов</h4>
+                <p class="text-muted mb-4 px-md-5">
                     {% if user.is_authenticated %}
                     {% if filter_type == 'following' %}
-                    У пользователей, на которых вы подписаны, пока нет постов.
-                    <br>Или вы еще ни на кого не подписаны.
+                    У пользователей, на которых вы подписаны, пока нет постов.<br>Возможно, вы еще ни на кого не
+                    подписаны?
                     {% else %}
-                    Станьте первым, кто опубликует пост!
+                    Здесь пока пусто. Станьте первым, кто опубликует пост!
                     {% endif %}
                     {% else %}
-                    Зарегистрируйтесь, чтобы начать публиковать посты.
+                    Зарегистрируйтесь, чтобы начать публиковать и комментировать посты.
                     {% endif %}
                 </p>
-                {% if user.is_authenticated %}
-                {% if filter_type == 'following' %}
-                <a href="{% url 'accounts:users_list' %}" class="btn btn-primary me-2">
-                    <i class="bi bi-people"></i> Найти пользователей
-                </a>
-                {% endif %}
-                <a href="{% url 'posts:create' %}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle"></i> Создать первый пост
-                </a>
-                {% else %}
-                <a href="{% url 'accounts:register' %}" class="btn btn-primary me-2">Зарегистрироваться</a>
-                <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary">Войти</a>
-                {% endif %}
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    {% if user.is_authenticated %}
+                    {% if filter_type == 'following' %}
+                    <a href="{% url 'accounts:users_list' %}" class="btn btn-outline-primary rounded-pill px-4">
+                        <i class="bi bi-people"></i> Найти интересных людей
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'posts:create' %}" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-plus-lg"></i> Создать пост
+                    </a>
+                    {% else %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary rounded-pill px-4">Создать
+                        аккаунт</a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary rounded-pill px-4">Войти</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endif %}

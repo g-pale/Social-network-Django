@@ -2,8 +2,8 @@
 Карточка поста для ленты (home.html).
 Использование: {% include 'posts/includes/_post_card.html' with post=post is_liked=is_liked user=user %}
 {% endcomment %}
-<div class="card shadow mb-4">
-    <div class="card-body">
+<div class="card hover-elevate mb-4">
+    <div class="card-body pb-3">
         <!-- Заголовок поста -->
         <div class="d-flex justify-content-between align-items-start mb-3">
             <div class="d-flex align-items-center">
@@ -57,11 +57,12 @@
             {% endif %}
         </p>
 
-        <!-- Изображение поста -->
+        <!-- Изображение поста (Full bleed) -->
         {% if post.image %}
-        <div class="mb-3">
+        <div class="post-image-container">
             <a href="{% url 'posts:detail' post.pk %}">
-                <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded">
+                <img src="{{ post.image.url }}" alt="Post image" class="img-fluid w-100 object-fit-cover"
+                    style="max-height: 500px;">
             </a>
         </div>
         {% endif %}
