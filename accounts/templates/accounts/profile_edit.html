@@ -14,72 +14,75 @@
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
-                    
+
                     <!-- Текущий аватар -->
                     {% if user.avatar %}
-                        <div class="mb-3 text-center">
-                            <label class="form-label">Текущий аватар:</label><br>
-                            <img src="{{ user.avatar.url }}" alt="Current avatar" 
-                                 class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
-                        </div>
+                    <div class="mb-3 text-center">
+                        <label class="form-label">Текущий аватар:</label><br>
+                        <img src="{{ user.avatar.url }}" alt="Current avatar" class="rounded-circle"
+                            style="width: 100px; height: 100px; object-fit: cover;">
+                    </div>
                     {% endif %}
-                    
+
                     <!-- Поля формы -->
                     <div class="mb-3">
                         <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
                         {{ form.email }}
                         {% if form.email.errors %}
-                            <div class="text-danger small">{{ form.email.errors }}</div>
+                        <div class="text-danger small">{{ form.email.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label
+                                }}</label>
                             {{ form.first_name }}
                             {% if form.first_name.errors %}
-                                <div class="text-danger small">{{ form.first_name.errors }}</div>
+                            <div class="text-danger small">{{ form.first_name.errors }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label
+                                }}</label>
                             {{ form.last_name }}
                             {% if form.last_name.errors %}
-                                <div class="text-danger small">{{ form.last_name.errors }}</div>
+                            <div class="text-danger small">{{ form.last_name.errors }}</div>
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="{{ form.bio.id_for_label }}" class="form-label">{{ form.bio.label }}</label>
                         {{ form.bio }}
                         {% if form.bio.help_text %}
-                            <div class="form-text">{{ form.bio.help_text }}</div>
+                        <div class="form-text">{{ form.bio.help_text }}</div>
                         {% endif %}
                         {% if form.bio.errors %}
-                            <div class="text-danger small">{{ form.bio.errors }}</div>
+                        <div class="text-danger small">{{ form.bio.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="{{ form.avatar.id_for_label }}" class="form-label">{{ form.avatar.label }}</label>
                         {{ form.avatar }}
+                        {{ form.cropped_avatar }}
                         {% if form.avatar.help_text %}
-                            <div class="form-text">{{ form.avatar.help_text }}</div>
+                        <div class="form-text">{{ form.avatar.help_text }}</div>
                         {% endif %}
                         {% if form.avatar.errors %}
-                            <div class="text-danger small">{{ form.avatar.errors }}</div>
+                        <div class="text-danger small">{{ form.avatar.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {% for error in form.non_field_errors %}
-                                <div>{{ error }}</div>
-                            {% endfor %}
-                        </div>
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
-                    
+
                     <div class="d-flex justify-content-between mt-4">
                         <a href="{% url 'accounts:profile' user.username %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Отмена
@@ -93,4 +96,98 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно Cropper для аватара -->
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true"
+    data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropperModalLabel">Кадрирование аватара</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="img-container" style="max-height: 60vh;">
+                    <img id="imageToCrop" src="" alt="Picture" class="img-fluid d-block max-w-100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="cropButton">Обрезать и сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const imageInput = document.getElementById('id_avatar_input');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropperModalElement = document.getElementById('cropperModal');
+        const croppedImageInput = document.getElementById('id_cropped_avatar');
+
+        if (imageInput && cropperModalElement) {
+            const cropperModal = bootstrap.Modal.getOrCreateInstance(cropperModalElement);
+            let cropper;
+
+            imageInput.addEventListener('change', function (e) {
+                const files = e.target.files;
+                if (files && files.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const base64Str = event.target.result;
+                        imageToCrop.onload = function () {
+                            croppedImageInput.value = '';
+                            cropperModal.show();
+                        };
+                        imageToCrop.src = base64Str;
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+            });
+
+            cropperModalElement.addEventListener('shown.bs.modal', function () {
+                try {
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        autoCropArea: 0.8,
+                        responsive: true,
+                        restore: false,
+                    });
+                } catch (e) { console.error(e); }
+            });
+
+            cropperModalElement.addEventListener('hidden.bs.modal', function () {
+                try {
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                } catch (e) { console.error(e); }
+
+                if (!croppedImageInput.value) {
+                    imageInput.value = '';
+                }
+            });
+
+            document.getElementById('cropButton').addEventListener('click', function () {
+                try {
+                    if (cropper) {
+                        const canvas = cropper.getCroppedCanvas({
+                            maxWidth: 1024,
+                            maxHeight: 1024
+                        });
+                        if (canvas) {
+                            croppedImageInput.value = canvas.toDataURL('image/jpeg', 0.9);
+                        }
+                    }
+                } catch (e) { console.error(e); }
+                cropperModal.hide();
+            });
+        }
+    });
+</script>
+{% endblock %}
 {% endblock %}

@@ -30,6 +30,7 @@
                     <div class="mb-3">
                         <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
                         {{ form.image }}
+                        {{ form.cropped_image }}
                         {% if form.image.help_text %}
                         <div class="form-text">{{ form.image.help_text }}</div>
                         {% endif %}
@@ -60,6 +61,28 @@
     </div>
 </div>
 
+<!-- Модальное окно Cropper -->
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true"
+    data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropperModalLabel">Кадрирование изображения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="img-container" style="max-height: 60vh;">
+                    <img id="imageToCrop" src="" alt="Picture" class="img-fluid d-block max-w-100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="cropButton">Обрезать и сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block extra_js %}
 <script>
     // Подсчет символов в тексте поста
@@ -82,6 +105,74 @@
             // Инициализация при загрузке страницы
             const length = textArea.value.length;
             charCount.textContent = length + ' / 1000 символов';
+        }
+
+        // Cropper JS Logic
+        const imageInput = document.getElementById('id_image_input');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropperModalElement = document.getElementById('cropperModal');
+        const croppedImageInput = document.getElementById('id_cropped_image');
+
+        if (imageInput && cropperModalElement) {
+            const cropperModal = bootstrap.Modal.getOrCreateInstance(cropperModalElement);
+            let cropper;
+
+            imageInput.addEventListener('change', function (e) {
+                const files = e.target.files;
+                if (files && files.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const base64Str = event.target.result;
+                        imageToCrop.onload = function () {
+                            croppedImageInput.value = '';
+                            cropperModal.show();
+                        };
+                        imageToCrop.src = base64Str;
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+            });
+
+            cropperModalElement.addEventListener('shown.bs.modal', function () {
+                try {
+                    cropper = new Cropper(imageToCrop, {
+                        viewMode: 1, // Restrict the crop box not to exceed the size of the canvas
+                        autoCropArea: 1,
+                        responsive: true,
+                        restore: false,
+                        // No aspect ratio enforced for post images, they can be free-form inside boundaries
+                    });
+                } catch (err) { console.error(err); }
+            });
+
+            cropperModalElement.addEventListener('hidden.bs.modal', function () {
+                try {
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                } catch (err) { console.error(err); }
+                // If user closed modal without cropping, clear the file input
+                if (!croppedImageInput.value) {
+                    imageInput.value = '';
+                }
+            });
+
+            document.getElementById('cropButton').addEventListener('click', function () {
+                try {
+                    if (cropper) {
+                        const canvas = cropper.getCroppedCanvas({
+                            maxWidth: 1920,
+                            maxHeight: 1920
+                        });
+                        if (canvas) {
+                            // Store the base64 output
+                            croppedImageInput.value = canvas.toDataURL('image/jpeg', 0.9);
+                        }
+                    }
+                } catch (err) { console.error(err); }
+                cropperModal.hide();
+            });
         }
     });
 </script>

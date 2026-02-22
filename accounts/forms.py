@@ -4,6 +4,9 @@ from django.template import loader
 from django.contrib.auth import get_user_model
 from PIL import Image
 import os
+import base64
+import uuid
+from django.core.files.base import ContentFile
 
 User = get_user_model()
 
@@ -176,13 +179,18 @@ class UserProfileEditForm(forms.ModelForm):
         required=False,
         widget=forms.FileInput(attrs={
             'class': 'form-control',
-            'accept': 'image/*'
+            'accept': 'image/*',
+            'id': 'id_avatar_input'
         })
+    )
+    cropped_avatar = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_cropped_avatar'})
     )
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'bio', 'avatar']
+        fields = ['email', 'first_name', 'last_name', 'bio', 'avatar', 'cropped_avatar']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -230,3 +238,19 @@ class UserProfileEditForm(forms.ModelForm):
                 raise forms.ValidationError('Файл повреждён или не является изображением.')
 
         return avatar
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        cropped_avatar_data = self.cleaned_data.get('cropped_avatar')
+
+        if cropped_avatar_data:
+            format, imgstr = cropped_avatar_data.split(';base64,')
+            ext = format.split('/')[-1]
+            file_name = f"avatar_{uuid.uuid4().hex}.{ext}"
+            data = ContentFile(base64.b64decode(imgstr), name=file_name)
+
+            user.avatar = data
+
+        if commit:
+            user.save()
+        return user
