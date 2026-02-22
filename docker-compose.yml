@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: >
+      bash -c "python manage.py collectstatic --noinput &&
+               python manage.py migrate &&
+               daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: minisocial
+      POSTGRES_USER: minisocial_user
+      POSTGRES_PASSWORD: secretpassword
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  celery_worker:
+    build: .
+    command: celery -A config worker -l info
+    volumes:
+      - .:/app
+      - media_volume:/app/media
+    env_file:
+      - .env.docker
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

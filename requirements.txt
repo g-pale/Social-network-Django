@@ -17,3 +17,16 @@ whitenoise>=6.5.0
 
 # Для работы с датами и временем
 python-dateutil>=2.8.2
+
+# Базы данных
+psycopg2-binary>=2.9.9
+dj-database-url>=2.1.0
+
+# Фоновые задачи и Кэш
+celery>=5.3.6
+redis>=5.0.1
+
+# WebSockets
+channels>=4.0.0
+daphne>=4.0.0
+channels-redis>=4.1.0

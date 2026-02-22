@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count
+from django.core.cache import cache
 from .models import Post, Like, Comment
 from .forms import PostForm, CommentForm
 from followers.models import Follow
@@ -39,16 +40,25 @@ def home(request):
             .order_by(order_by)
         )
     else:
-        # Показываем все посты
-        posts = (
-            Post.objects.all()
-            .select_related('author')
-            .annotate(
-                annotated_likes_count=Count('likes', distinct=True),
-                annotated_comments_count=Count('comments', distinct=True),
+        # Показываем все посты (кэшируем результат)
+        cache_key = f'all_posts_{sort_type}'
+        posts_list = cache.get(cache_key)
+
+        if posts_list is None:
+            posts = (
+                Post.objects.all()
+                .select_related('author')
+                .annotate(
+                    annotated_likes_count=Count('likes', distinct=True),
+                    annotated_comments_count=Count('comments', distinct=True),
+                )
+                .order_by(order_by)
             )
-            .order_by(order_by)
-        )
+            posts_list = list(posts)
+            # Кэшируем на 15 минут
+            cache.set(cache_key, posts_list, 60 * 15)
+
+        posts = posts_list
 
     # Пагинация: 10 постов на страницу
     paginator = Paginator(posts, 10)

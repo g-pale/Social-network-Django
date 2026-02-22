@@ -47,6 +47,16 @@
             {% endif %}
         </div>
 
+        <!-- Изображение поста (Full bleed) -->
+        {% if post.image %}
+        <div class="post-image-container mb-3">
+            <a href="{% url 'posts:detail' post.pk %}">
+                <img src="{{ post.image.url }}" alt="Post image" class="img-fluid w-100 object-fit-cover"
+                    style="max-height: 500px;">
+            </a>
+        </div>
+        {% endif %}
+
         <!-- Текст поста -->
         <p class="card-text mb-3">
             {% if post.text|length > 200 %}
@@ -56,16 +66,6 @@
             {{ post.text|linebreaks }}
             {% endif %}
         </p>
-
-        <!-- Изображение поста (Full bleed) -->
-        {% if post.image %}
-        <div class="post-image-container">
-            <a href="{% url 'posts:detail' post.pk %}">
-                <img src="{{ post.image.url }}" alt="Post image" class="img-fluid w-100 object-fit-cover"
-                    style="max-height: 500px;">
-            </a>
-        </div>
-        {% endif %}
 
         <!-- Информация о редактировании -->
         {% if post.updated_at != post.created_at %}
