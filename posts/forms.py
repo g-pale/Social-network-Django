@@ -2,6 +2,9 @@ from django import forms
 from PIL import Image
 from .models import Post, Comment
 import os
+import base64
+import uuid
+from django.core.files.base import ContentFile
 
 
 class PostForm(forms.ModelForm):
@@ -24,14 +27,19 @@ class PostForm(forms.ModelForm):
         required=False,
         widget=forms.FileInput(attrs={
             'class': 'form-control',
-            'accept': 'image/*'
+            'accept': 'image/*',
+            'id': 'id_image_input'
         }),
         help_text='Опционально. Вы можете прикрепить изображение к посту.'
+    )
+    cropped_image = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_cropped_image'})
     )
 
     class Meta:
         model = Post
-        fields = ['text', 'image']
+        fields = ['text', 'image', 'cropped_image']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,6 +86,24 @@ class PostForm(forms.ModelForm):
                 raise forms.ValidationError('Файл повреждён или не является изображением.')
 
         return image
+
+    def save(self, commit=True):
+        post = super().save(commit=False)
+        cropped_image_data = self.cleaned_data.get('cropped_image')
+
+        if cropped_image_data:
+            # Убираем префикс `data:image/png;base64,`
+            format, imgstr = cropped_image_data.split(';base64,')
+            ext = format.split('/')[-1]
+            file_name = f"{uuid.uuid4().hex}.{ext}"
+            data = ContentFile(base64.b64decode(imgstr), name=file_name)
+
+            # Заменяем оригинальный файл обрезанным
+            post.image = data
+
+        if commit:
+            post.save()
+        return post
 
 
 class CommentForm(forms.ModelForm):

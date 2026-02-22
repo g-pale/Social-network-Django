@@ -14,46 +14,48 @@
             <div class="card-body">
                 <!-- Текущее изображение -->
                 {% if post.image %}
-                    <div class="mb-3 text-center">
-                        <label class="form-label">Текущее изображение:</label><br>
-                        <img src="{{ post.image.url }}" alt="Current image" class="img-fluid rounded mb-2" style="max-height: 300px;">
-                    </div>
+                <div class="mb-3 text-center">
+                    <label class="form-label">Текущее изображение:</label><br>
+                    <img src="{{ post.image.url }}" alt="Current image" class="img-fluid rounded mb-2"
+                        style="max-height: 300px;">
+                </div>
                 {% endif %}
-                
+
                 <form method="post" enctype="multipart/form-data" novalidate>
                     {% csrf_token %}
-                    
+
                     <div class="mb-3">
                         <label for="{{ form.text.id_for_label }}" class="form-label">{{ form.text.label }}</label>
                         {{ form.text }}
                         {% if form.text.help_text %}
-                            <div class="form-text">{{ form.text.help_text }}</div>
+                        <div class="form-text">{{ form.text.help_text }}</div>
                         {% endif %}
                         {% if form.text.errors %}
-                            <div class="text-danger small">{{ form.text.errors }}</div>
+                        <div class="text-danger small">{{ form.text.errors }}</div>
                         {% endif %}
                         <small class="text-muted" id="char-count">{{ form.text.value|length }} / 1000 символов</small>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="{{ form.image.id_for_label }}" class="form-label">{{ form.image.label }}</label>
                         {{ form.image }}
+                        {{ form.cropped_image }}
                         {% if form.image.help_text %}
-                            <div class="form-text">{{ form.image.help_text }}</div>
+                        <div class="form-text">{{ form.image.help_text }}</div>
                         {% endif %}
                         {% if form.image.errors %}
-                            <div class="text-danger small">{{ form.image.errors }}</div>
+                        <div class="text-danger small">{{ form.image.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     {% if form.non_field_errors %}
-                        <div class="alert alert-danger" role="alert">
-                            {% for error in form.non_field_errors %}
-                                <div>{{ error }}</div>
-                            {% endfor %}
-                        </div>
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
                     {% endif %}
-                    
+
                     <div class="d-flex justify-content-between mt-4">
                         <a href="{% url 'posts:detail' post.pk %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Отмена
@@ -68,23 +70,111 @@
     </div>
 </div>
 
+<!-- Модальное окно Cropper -->
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true"
+    data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropperModalLabel">Кадрирование изображения</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="img-container" style="max-height: 60vh;">
+                    <img id="imageToCrop" src="" alt="Picture" class="img-fluid d-block max-w-100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="cropButton">Обрезать и сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block extra_js %}
 <script>
     // Подсчет символов в тексте поста
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const textArea = document.getElementById('{{ form.text.id_for_label }}');
         const charCount = document.getElementById('char-count');
-        
+
         if (textArea && charCount) {
-            textArea.addEventListener('input', function() {
+            textArea.addEventListener('input', function () {
                 const length = this.value.length;
                 charCount.textContent = length + ' / 1000 символов';
-                
+
                 if (length > 1000) {
                     charCount.classList.add('text-danger');
                 } else {
                     charCount.classList.remove('text-danger');
                 }
+            });
+        }
+
+        // Cropper JS Logic
+        const imageInput = document.getElementById('id_image_input');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropperModalElement = document.getElementById('cropperModal');
+        const croppedImageInput = document.getElementById('id_cropped_image');
+
+        if (imageInput && cropperModalElement) {
+            const cropperModal = bootstrap.Modal.getOrCreateInstance(cropperModalElement);
+            let cropper;
+
+            imageInput.addEventListener('change', function (e) {
+                const files = e.target.files;
+                if (files && files.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const base64Str = event.target.result;
+                        imageToCrop.onload = function () {
+                            croppedImageInput.value = '';
+                            cropperModal.show();
+                        };
+                        imageToCrop.src = base64Str;
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+            });
+
+            cropperModalElement.addEventListener('shown.bs.modal', function () {
+                try {
+                    cropper = new Cropper(imageToCrop, {
+                        viewMode: 1,
+                        autoCropArea: 1,
+                        responsive: true,
+                        restore: false,
+                    });
+                } catch (err) { console.error(err); }
+            });
+
+            cropperModalElement.addEventListener('hidden.bs.modal', function () {
+                try {
+                    if (cropper) {
+                        cropper.destroy();
+                        cropper = null;
+                    }
+                } catch (err) { console.error(err); }
+
+                if (!croppedImageInput.value) {
+                    imageInput.value = '';
+                }
+            });
+
+            document.getElementById('cropButton').addEventListener('click', function () {
+                try {
+                    if (cropper) {
+                        const canvas = cropper.getCroppedCanvas({
+                            maxWidth: 1920,
+                            maxHeight: 1920
+                        });
+                        if (canvas) {
+                            croppedImageInput.value = canvas.toDataURL('image/jpeg', 0.9);
+                        }
+                    }
+                } catch (err) { console.error(err); }
+                cropperModal.hide();
             });
         }
     });
