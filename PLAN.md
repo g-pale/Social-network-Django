@@ -268,6 +268,19 @@
 
 ---
 
+### Этап 15: Продвинутые функции и Деплой (Phase 6)
+**Цель:** Подготовить проект к production с продвинутыми механизмами (Docker, Celery, WebSockets, Cache).
+
+#### Задачи:
+1. ⏳ Упаковка проекта в Docker / docker-compose (PostgreSQL, Redis, Django, Daphne, Celery).
+2. ⏳ Интеграция Celery + Redis (фоновая отправка email и обработка изображений).
+3. ⏳ Внедрение Django Channels (WebSockets) для чата в реальном времени.
+4. ⏳ Настройка продвинутого кэширования ленты (Redis/Memcached).
+
+**Результат:** Production-ready приложение с real-time чатом и фоновыми задачами.
+
+---
+
 ## Технический стек
 
 ### Основные технологии:

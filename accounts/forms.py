@@ -1,10 +1,34 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm
+from django.template import loader
 from django.contrib.auth import get_user_model
 from PIL import Image
 import os
 
 User = get_user_model()
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        from accounts.tasks import send_password_reset_email_task
+
+        subject = loader.render_to_string(subject_template_name, context)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+        body = loader.render_to_string(email_template_name, context)
+
+        html_email = None
+        if html_email_template_name is not None:
+            html_email = loader.render_to_string(html_email_template_name, context)
+
+        send_password_reset_email_task.delay(
+            subject=subject,
+            body=body,
+            from_email=from_email,
+            to_email=to_email,
+            html_email=html_email
+        )
 
 
 class UserRegisterForm(UserCreationForm):

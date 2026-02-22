@@ -14,85 +14,87 @@
                     <div class="d-flex align-items-center">
                         <!-- Аватар автора -->
                         {% if post.author.avatar %}
-                            <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}" 
-                                 class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                        <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}"
+                            class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                         {% else %}
-                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" 
-                                 style="width: 40px; height: 40px; font-size: 18px;">
-                                {{ post.author.username|first|upper }}
-                            </div>
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2"
+                            style="width: 40px; height: 40px; font-size: 18px;">
+                            {{ post.author.username|first|upper }}
+                        </div>
                         {% endif %}
                         <div>
                             <h6 class="mb-0">
-                                <a href="{% url 'accounts:profile' post.author.username %}" class="text-decoration-none">
+                                <a href="{% url 'accounts:profile' post.author.username %}"
+                                    class="text-decoration-none">
                                     {{ post.author.username }}
                                 </a>
                             </h6>
                             <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
                         </div>
                     </div>
-                    
+
                     <!-- Кнопки действий (только для автора) -->
                     {% if user.is_authenticated and user == post.author %}
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'posts:edit' post.pk %}">
-                                        <i class="bi bi-pencil"></i> Редактировать
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-danger" 
-                                       href="#" 
-                                       data-bs-toggle="modal" 
-                                       data-bs-target="#deletePostModal"
-                                       data-post-id="{{ post.pk }}"
-                                       data-post-url="{% url 'posts:delete' post.pk %}"
-                                       data-post-text="{{ post.text|truncatewords:20 }}">
-                                        <i class="bi bi-trash"></i> Удалить
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'posts:edit' post.pk %}">
+                                    <i class="bi bi-pencil"></i> Редактировать
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#deletePostModal" data-post-id="{{ post.pk }}"
+                                    data-post-url="{% url 'posts:delete' post.pk %}"
+                                    data-post-text="{{ post.text|truncatewords:20 }}">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                     {% endif %}
                 </div>
-                
-                <!-- Текст поста -->
-                <p class="card-text mb-3">{{ post.text|linebreaks }}</p>
-                
+
                 <!-- Изображение поста -->
                 {% if post.image %}
-                    <div class="mb-3">
-                        <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded">
-                    </div>
+                <div class="mb-3">
+                    <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded">
+                </div>
                 {% endif %}
-                
+
+                <!-- Текст поста -->
+                <p class="card-text mb-3">{{ post.text|linebreaks }}</p>
+
                 <!-- Информация о редактировании -->
                 {% if post.updated_at != post.created_at %}
-                    <small class="text-muted">
-                        <i class="bi bi-pencil"></i> Отредактировано: {{ post.updated_at|date:"d.m.Y H:i" }}
-                    </small>
+                <small class="text-muted">
+                    <i class="bi bi-pencil"></i> Отредактировано: {{ post.updated_at|date:"d.m.Y H:i" }}
+                </small>
                 {% endif %}
-                
+
                 <!-- Лайки и комментарии -->
                 <div class="mt-3 pt-3 border-top">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             {% if user.is_authenticated and user != post.author %}
-                                <button class="btn btn-sm like-btn {% if is_liked %}btn-danger{% else %}btn-outline-danger{% endif %}" 
-                                        data-post-id="{{ post.pk }}" 
-                                        data-liked="{% if is_liked %}true{% else %}false{% endif %}">
-                                    <i class="bi bi-heart{% if is_liked %}-fill{% endif %}"></i> 
-                                    <span class="likes-count">{{ post.get_likes_count }}</span>
-                                </button>
+                            <button
+                                class="btn btn-sm like-btn {% if is_liked %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                                data-post-id="{{ post.pk }}"
+                                data-liked="{% if is_liked %}true{% else %}false{% endif %}">
+                                <i class="bi bi-heart{% if is_liked %}-fill{% endif %}"></i>
+                                <span class="likes-count">{{ post.get_likes_count }}</span>
+                            </button>
                             {% else %}
-                                <span class="text-muted">
-                                    <i class="bi bi-heart"></i> <span class="likes-count">{{ post.get_likes_count }}</span> лайков
-                                </span>
+                            <span class="text-muted">
+                                <i class="bi bi-heart"></i> <span class="likes-count">{{ post.get_likes_count }}</span>
+                                лайков
+                            </span>
                             {% endif %}
                             <span class="text-muted ms-3">
                                 <i class="bi bi-chat"></i> {{ post.get_comments_count }} комментариев
@@ -102,7 +104,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Комментарии -->
         <div class="card shadow">
             <div class="card-header">
@@ -113,72 +115,73 @@
             <div class="card-body">
                 <!-- Форма для добавления комментария (только для авторизованных) -->
                 {% if user.is_authenticated %}
-                    <form id="comment-form" class="mb-4">
-                        {% csrf_token %}
-                        <div class="mb-2">
-                            {{ comment_form.text }}
-                            {% if comment_form.text.errors %}
-                                <div class="text-danger small">{{ comment_form.text.errors }}</div>
-                            {% endif %}
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="bi bi-send"></i> Отправить комментарий
-                        </button>
-                    </form>
-                {% else %}
-                    <div class="alert alert-info mb-3">
-                        <a href="{% url 'accounts:login' %}">Войдите</a>, чтобы оставить комментарий.
+                <form id="comment-form" class="mb-4">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        {{ comment_form.text }}
+                        {% if comment_form.text.errors %}
+                        <div class="text-danger small">{{ comment_form.text.errors }}</div>
+                        {% endif %}
                     </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-send"></i> Отправить комментарий
+                    </button>
+                </form>
+                {% else %}
+                <div class="alert alert-info mb-3">
+                    <a href="{% url 'accounts:login' %}">Войдите</a>, чтобы оставить комментарий.
+                </div>
                 {% endif %}
-                
+
                 <hr>
-                
+
                 <!-- Список комментариев -->
                 <div id="comments-list">
                     {% if comments %}
-                        {% for comment in comments %}
-                            <div class="mb-3 pb-3 comment-item {% if not forloop.last %}border-bottom{% endif %}" data-comment-id="{{ comment.id }}">
-                                <div class="d-flex align-items-start">
-                                    <!-- Аватар автора комментария -->
-                                    {% if comment.author.avatar %}
-                                        <img src="{{ comment.author.avatar.url }}" alt="{{ comment.author.username }}" 
-                                             class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
-                                    {% else %}
-                                        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2" 
-                                             style="width: 32px; height: 32px; font-size: 14px;">
-                                            {{ comment.author.username|first|upper }}
-                                        </div>
-                                    {% endif %}
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>
-                                                    <a href="{% url 'accounts:profile' comment.author.username %}" class="text-decoration-none">
-                                                        {{ comment.author.username }}
-                                                    </a>
-                                                </strong>
-                                                <small class="text-muted ms-2">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
-                                            </div>
-                                            {% if user.is_authenticated and user == comment.author %}
-                                                <button class="btn btn-sm btn-outline-danger delete-comment-btn" 
-                                                        data-comment-id="{{ comment.id }}"
-                                                        title="Удалить комментарий">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            {% endif %}
-                                        </div>
-                                        <p class="mb-0 mt-1">{{ comment.text|linebreaks }}</p>
-                                    </div>
-                                </div>
+                    {% for comment in comments %}
+                    <div class="mb-3 pb-3 comment-item {% if not forloop.last %}border-bottom{% endif %}"
+                        data-comment-id="{{ comment.id }}">
+                        <div class="d-flex align-items-start">
+                            <!-- Аватар автора комментария -->
+                            {% if comment.author.avatar %}
+                            <img src="{{ comment.author.avatar.url }}" alt="{{ comment.author.username }}"
+                                class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2"
+                                style="width: 32px; height: 32px; font-size: 14px;">
+                                {{ comment.author.username|first|upper }}
                             </div>
-                        {% endfor %}
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>
+                                            <a href="{% url 'accounts:profile' comment.author.username %}"
+                                                class="text-decoration-none">
+                                                {{ comment.author.username }}
+                                            </a>
+                                        </strong>
+                                        <small class="text-muted ms-2">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                                    </div>
+                                    {% if user.is_authenticated and user == comment.author %}
+                                    <button class="btn btn-sm btn-outline-danger delete-comment-btn"
+                                        data-comment-id="{{ comment.id }}" title="Удалить комментарий">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <p class="mb-0 mt-1">{{ comment.text|linebreaks }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <p class="text-muted text-center py-3" id="no-comments">Пока нет комментариев. Будьте первым!</p>
+                    <p class="text-muted text-center py-3" id="no-comments">Пока нет комментариев. Будьте первым!</p>
                     {% endif %}
                 </div>
             </div>
         </div>
-        
+
         <!-- Кнопка назад -->
         <div class="mt-3">
             <a href="{% url 'posts:home' %}" class="btn btn-outline-secondary">
@@ -197,7 +200,8 @@
                 <h5 class="modal-title" id="deletePostModalLabel">
                     <i class="bi bi-exclamation-triangle"></i> Подтверждение удаления
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Вы уверены, что хотите удалить этот пост?</p>
@@ -223,14 +227,16 @@
 {% endif %}
 
 <!-- Модальное окно для подтверждения удаления комментария -->
-<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="deleteCommentModalLabel">
                     <i class="bi bi-exclamation-triangle"></i> Подтверждение удаления
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Вы уверены, что хотите удалить этот комментарий?</p>
@@ -256,18 +262,18 @@
 <script src="{% static 'js/comments.js' %}"></script>
 <script>
     // Обработчик для модального окна удаления поста
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const deletePostModal = document.getElementById('deletePostModal');
         const deletePostForm = document.getElementById('deletePostForm');
         const deletePostText = document.getElementById('deletePostText');
-        
+
         if (deletePostModal && deletePostForm && deletePostText) {
-            deletePostModal.addEventListener('show.bs.modal', function(event) {
+            deletePostModal.addEventListener('show.bs.modal', function (event) {
                 const button = event.relatedTarget;
                 if (button) {
                     const postText = button.getAttribute('data-post-text');
                     const postUrl = button.getAttribute('data-post-url');
-                    
+
                     if (postText) {
                         deletePostText.textContent = postText;
                     }

@@ -135,6 +135,10 @@
             <div class="list-group">
                 {% for post in posts %}
                 <div class="list-group-item">
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded mb-2 mt-1"
+                        style="max-height: 200px;">
+                    {% endif %}
                     <div class="d-flex w-100 justify-content-between mb-2">
                         <h6 class="mb-1">
                             <a href="{% url 'posts:detail' post.pk %}" class="text-decoration-none">
@@ -143,10 +147,6 @@
                         </h6>
                         <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
                     </div>
-                    {% if post.image %}
-                    <img src="{{ post.image.url }}" alt="Post image" class="img-fluid rounded mb-2"
-                        style="max-height: 200px;">
-                    {% endif %}
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">
                             <i class="bi bi-heart"></i> {{ post.get_likes_count }}
